@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hartford Legacy School Enrollment Dashboard</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --navy: #1F4E78;
+    --accent: #C44E52;
+    --green: #55A868;
+    --orange: #DD8452;
+    --gray-bg: #f5f6f8;
+    --border: #dfe3e8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: 0;
+    background: var(--gray-bg);
+    color: #222;
+  }
+  header {
+    background: var(--navy);
+    color: white;
+    padding: 18px 24px;
+  }
+  header h1 { margin: 0; font-size: 20px; font-weight: 600; }
+  header p { margin: 4px 0 0; font-size: 13px; color: #cfe0ee; }
+
+  .layout {
+    display: flex;
+    gap: 16px;
+    padding: 16px;
+    align-items: flex-start;
+  }
+
+  .panel {
+    background: white;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px;
+  }
+
+  .controls-panel {
+    width: 270px;
+    flex-shrink: 0;
+  }
+
+  .controls-panel h2 {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #555;
+    margin: 14px 0 8px;
+  }
+  .controls-panel h2:first-child { margin-top: 0; }
+
+  .control-block {
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 4px;
+  }
+
+  .slider-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    font-size: 12.5px;
+    margin-bottom: 4px;
+  }
+  .slider-row .val { font-weight: 600; color: var(--navy); }
+  input[type="range"] { width: 100%; }
+
+  .year-range-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+  .year-range-row select {
+    flex: 1;
+    font-size: 12.5px;
+    padding: 4px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+  }
+
+  .school-list {
+    max-height: 320px;
+    overflow-y: auto;
+    padding-top: 4px;
+  }
+  .school-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    padding: 3px 0;
+  }
+  .school-item input { cursor: pointer; }
+  .school-item label { cursor: pointer; }
+
+  .school-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+  .school-actions button {
+    font-size: 11px;
+    padding: 4px 8px;
+    border: 1px solid var(--border);
+    background: var(--gray-bg);
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .chart-panel {
+    flex: 1;
+    min-width: 0;
+  }
+  .chart-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 0 0 2px;
+  }
+  .chart-sub {
+    font-size: 12.5px;
+    color: #666;
+    margin: 0 0 14px;
+  }
+  .chart-wrap {
+    position: relative;
+    height: 480px;
+  }
+  .legend-row {
+    display: flex;
+    gap: 18px;
+    margin-top: 10px;
+    font-size: 12px;
+    color: #444;
+  }
+  .legend-swatch {
+    display: inline-block;
+    width: 11px;
+    height: 11px;
+    border-radius: 2px;
+    margin-right: 5px;
+    vertical-align: -1px;
+  }
+  .legend-line {
+    display: inline-block;
+    width: 16px;
+    height: 3px;
+    background: #111;
+    margin-right: 5px;
+    vertical-align: 3px;
+  }
+  .footnote {
+    font-size: 11.5px;
+    color: #888;
+    margin-top: 10px;
+  }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Hartford Legacy School Enrollment Dashboard</h1>
+  <p>21 public schools, present 30+ of the last 39 years, enrollment never below 200 &nbsp;|&nbsp; Source: NCES/CCD via Urban Institute, cross-checked against CT EdSight</p>
+  <p style="margin-top:6px;">
+    <a href="data/hartford_school_enrollment_by_school_by_year.csv" style="color:#cfe0ee;">Download full enrollment data (CSV)</a>
+    &nbsp;&middot;&nbsp;
+    <a href="data/ccd_vs_edsight_comparison.csv" style="color:#cfe0ee;">Download CCD vs. EdSight comparison (CSV)</a>
+  </p>
+</header>
+
+<div class="layout">
+
+  <div class="panel controls-panel">
+
+    <div class="control-block">
+      <h2 style="margin-top:0;">Size Threshold</h2>
+      <div class="slider-row"><span>Split point</span><span class="val" id="thresholdVal">500 students</span></div>
+      <input type="range" id="thresholdSlider" min="100" max="1000" step="25" value="500">
+    </div>
+
+    <div class="control-block">
+      <h2>Year Range</h2>
+      <div class="year-range-row">
+        <select id="yearFrom"></select>
+        <span>&ndash;</span>
+        <select id="yearTo"></select>
+      </div>
+    </div>
+
+    <div class="control-block" style="border-bottom:none;">
+      <h2>Schools (click to include/exclude)</h2>
+      <div class="school-actions">
+        <button id="selectAll">Select all</button>
+        <button id="selectNone">Clear</button>
+      </div>
+      <div class="school-list" id="schoolList"></div>
+    </div>
+
+  </div>
+
+  <div class="panel chart-panel">
+    <div class="chart-title">Schools by Size &amp; Average Enrollment Trend</div>
+    <div class="chart-sub" id="chartSub"></div>
+    <div class="chart-wrap">
+      <canvas id="mainChart"></canvas>
+    </div>
+    <div class="legend-row">
+      <span><span class="legend-swatch" style="background:var(--orange);"></span>&le; threshold</span>
+      <span><span class="legend-swatch" style="background:var(--green);"></span>&gt; threshold</span>
+      <span><span class="legend-line"></span>3-yr rolling avg enrollment (right axis)</span>
+    </div>
+    <div class="footnote">Drag the threshold slider to re-segment schools live. Use the year dropdowns to zoom into a sub-period. Uncheck a school to exclude it from both the bars and the trendline.</div>
+  </div>
+
+</div>
+
+<script>
+const RAW = {"years": ["1986-87", "1987-88", "1988-89", "1989-90", "1990-91", "1991-92", "1992-93", "1993-94", "1994-95", "1995-96", "1996-97", "1997-98", "1998-99", "1999-00", "2000-01", "2001-02", "2002-03", "2003-04", "2004-05", "2005-06", "2006-07", "2007-08", "2008-09", "2009-10", "2010-11", "2011-12", "2012-13", "2013-14", "2014-15", "2015-16", "2016-17", "2017-18", "2018-19", "2019-20", "2020-21", "2021-22", "2022-23", "2023-24", "2024-25"], "schools": {"Kennelly School": [578.0, 604.0, 617.0, 632.0, 609.0, 671.0, 658.0, 723.0, 751.0, 824.0, 832.0, 887.0, 911.0, 886.0, 944.0, 996.0, 867.0, 773.0, 817.0, 821.0, 830.0, 809.0, 799.0, 795.0, 783.0, 799.0, 703.0, 658.0, 621.0, 571.0, 558.0, 534.0, 626.0, 644.0, 605.0, 579.0, 598.0, 650.0, 628.0], "M. D. Fox School": [1211.0, 1235.0, 1231.0, 1251.0, 1370.0, 1017.0, 1059.0, 1184.0, 1139.0, 1138.0, 974.0, 966.0, 1024.0, 1018.0, 1010.0, 1069.0, 1010.0, 893.0, 866.0, 925.0, 830.0, 824.0, 783.0, 801.0, 848.0, null, 533.0, 569.0, 602.0, 621.0, 647.0, 610.0, 592.0, 583.0, 525.0, 504.0, 493.0, 531.0, 562.0], "Bulkeley High School Lower School": [1649.0, 1534.0, 1555.0, 1505.0, 1624.0, 1728.0, 1759.0, 1861.0, 1744.0, 1596.0, 1490.0, 1517.0, 1396.0, 1556.0, 1738.0, 1834.0, 1751.0, 1673.0, 1633.0, 1230.0, 1445.0, 1484.0, 1387.0, 767.0, 675.0, 634.0, 586.0, 493.0, 489.0, 412.0, null, null, null, null, null, null, null, null, null], "Batchelder School": [493.0, 550.0, 530.0, 544.0, 573.0, 546.0, 533.0, 494.0, 515.0, 511.0, 523.0, 570.0, 571.0, 564.0, 557.0, 572.0, 581.0, 549.0, 554.0, 586.0, 510.0, 578.0, 546.0, 568.0, 589.0, 565.0, 521.0, 528.0, 466.0, 478.0, 433.0, 397.0, null, null, null, null, null, null, null], "Webster Micro Society Magnet School": [413.0, 424.0, 390.0, 395.0, 437.0, 439.0, 459.0, 423.0, 467.0, 473.0, 447.0, 517.0, 520.0, 530.0, 511.0, 457.0, 521.0, 543.0, 571.0, 562.0, 625.0, 620.0, 610.0, 619.0, 592.0, 582.0, 626.0, 675.0, 678.0, 660.0, 633.0, 613.0, 622.0, 635.0, 642.0, 629.0, 615.0, 631.0, 626.0], "Kinsella Magnet School of Performing Arts: PK-8 Campus": [650.0, 638.0, 687.0, 624.0, 715.0, 708.0, 658.0, 681.0, 567.0, 549.0, 582.0, 508.0, 537.0, 511.0, 506.0, 463.0, 487.0, 446.0, 384.0, 425.0, 489.0, 517.0, 569.0, 618.0, 663.0, 690.0, 760.0, 819.0, 884.0, 910.0, 913.0, 884.0, 833.0, 711.0, 712.0, 652.0, 465.0, 436.0, 435.0], "Naylor/CCSU Leadership Academy": [518.0, 529.0, 487.0, 480.0, 526.0, 540.0, 541.0, 545.0, 512.0, 531.0, 599.0, 538.0, 548.0, 654.0, 628.0, 623.0, 639.0, 600.0, 563.0, 561.0, 576.0, 564.0, 608.0, 702.0, 703.0, 706.0, 722.0, 660.0, 682.0, 660.0, 636.0, 614.0, 521.0, 423.0, 388.0, 389.0, 357.0, 370.0, 372.0], "Parkville Community School": [685.0, 684.0, 683.0, 722.0, 764.0, 786.0, 735.0, 784.0, 709.0, 778.0, 730.0, 734.0, 776.0, 700.0, 704.0, 596.0, 573.0, 601.0, 611.0, 664.0, 561.0, 596.0, 578.0, 514.0, 516.0, 535.0, 564.0, 543.0, 532.0, 537.0, 534.0, 485.0, 451.0, 432.0, 385.0, 416.0, 396.0, 375.0, 351.0], "Dwight-Bellizzi Dual Language Academy": [361.0, 365.0, 382.0, 413.0, 409.0, 468.0, 452.0, 498.0, 468.0, 529.0, 570.0, 537.0, 585.0, 534.0, 570.0, 531.0, 562.0, 545.0, 520.0, 577.0, 429.0, 434.0, 355.0, 328.0, 339.0, 450.0, 556.0, 635.0, 662.0, 649.0, 634.0, 623.0, 596.0, 555.0, 566.0, 594.0, 626.0, 643.0, 651.0], "Sanchez School": [null, null, null, null, null, null, 392.0, 516.0, 556.0, 459.0, 520.0, 519.0, 522.0, 485.0, 493.0, 482.0, 507.0, 577.0, 526.0, 559.0, 530.0, 580.0, 528.0, 493.0, 492.0, 469.0, 494.0, 492.0, 485.0, 480.0, 396.0, 364.0, 424.0, 381.0, 344.0, 324.0, 322.0, 332.0, 311.0], "Wish Museum School": [554.0, 698.0, 615.0, 631.0, 603.0, 608.0, 549.0, 503.0, 525.0, 575.0, 529.0, 504.0, 428.0, 435.0, 408.0, 421.0, 386.0, 417.0, 444.0, 475.0, 415.0, 437.0, 424.0, 426.0, 444.0, 392.0, 392.0, 354.0, 303.0, 304.0, 429.0, 395.0, 502.0, 332.0, 285.0, 289.0, 291.0, 299.0, 297.0], "Betances Learning Lab Magnet School": [498.0, 551.0, 535.0, 567.0, 583.0, 581.0, 507.0, 527.0, 454.0, 423.0, 426.0, 473.0, 434.0, 412.0, 389.0, 376.0, 409.0, 431.0, 441.0, 438.0, 395.0, 403.0, 439.0, 345.0, 311.0, 315.0, 323.0, 278.0, 288.0, 279.0, 300.0, 384.0, 391.0, 411.0, 438.0, 394.0, 394.0, 411.0, 398.0], "SAND School": [751.0, 806.0, 826.0, 781.0, 756.0, 689.0, 688.0, 661.0, 570.0, 489.0, 421.0, 347.0, 370.0, 406.0, 414.0, 393.0, 323.0, 346.0, 371.0, 401.0, 351.0, 366.0, 442.0, 413.0, 463.0, 471.0, 484.0, 459.0, 402.0, 394.0, 362.0, 358.0, 395.0, 333.0, 286.0, 291.0, 286.0, 273.0, 266.0], "West Middle School": [686.0, 735.0, 692.0, 743.0, 858.0, 847.0, 805.0, 863.0, 841.0, 824.0, 919.0, 904.0, 934.0, 815.0, 797.0, 795.0, 704.0, 649.0, 711.0, 795.0, 739.0, 768.0, 670.0, 698.0, 690.0, 658.0, 637.0, 498.0, 380.0, 359.0, 449.0, 437.0, 480.0, 462.0, 262.0, 295.0, 293.0, 306.0, 289.0], "Milner Middle School": [694.0, 751.0, 701.0, 732.0, 646.0, 743.0, 672.0, 658.0, 657.0, 598.0, 573.0, 549.0, 552.0, 586.0, 562.0, 573.0, 556.0, 578.0, 493.0, 501.0, 404.0, 360.0, 417.0, 400.0, 412.0, 423.0, 373.0, 376.0, 330.0, 334.0, 292.0, 309.0, 329.0, 320.0, 328.0, 312.0, 284.0, 278.0, 261.0], "Burr Middle School": [565.0, 577.0, 564.0, 591.0, 586.0, 652.0, 700.0, 701.0, 622.0, 630.0, 611.0, 639.0, 657.0, 745.0, 692.0, 729.0, 549.0, 511.0, 460.0, 475.0, 513.0, 537.0, 520.0, 625.0, 707.0, 810.0, 729.0, 708.0, 685.0, 590.0, 616.0, 542.0, 546.0, 579.0, 324.0, 308.0, 277.0, 307.0, 259.0], "STEM Magnet at Annie Fisher School": [593.0, 715.0, 709.0, 736.0, 757.0, 734.0, 736.0, 776.0, 728.0, 784.0, 770.0, 764.0, 730.0, 723.0, 695.0, 709.0, 661.0, 603.0, 558.0, 589.0, 620.0, 560.0, 376.0, 253.0, 329.0, 344.0, 356.0, 359.0, 360.0, 367.0, 366.0, 363.0, 366.0, 337.0, 342.0, 352.0, 344.0, 373.0, 348.0], "Simpson-Waverly School": [548.0, 589.0, 609.0, 610.0, 630.0, 626.0, 562.0, 570.0, 466.0, 495.0, 470.0, 461.0, 425.0, 418.0, 371.0, 328.0, 332.0, 323.0, 383.0, 420.0, 371.0, 366.0, 347.0, 437.0, 362.0, 347.0, 326.0, 297.0, 295.0, 293.0, 314.0, 251.0, null, null, null, null, null, null, null], "Clark School": [688.0, 705.0, 723.0, 714.0, 768.0, 750.0, 685.0, 663.0, 644.0, 628.0, 629.0, 600.0, 592.0, 605.0, 492.0, 431.0, 418.0, 422.0, 390.0, 436.0, 397.0, 442.0, 466.0, 416.0, 384.0, 397.0, 379.0, 369.0, 335.0, 246.0, null, null, null, null, null, null, null, null, null], "Burns Latino Studies Academy": [929.0, 997.0, 1006.0, 990.0, 1089.0, 1072.0, 765.0, 669.0, 679.0, 737.0, 706.0, 745.0, 666.0, 668.0, 691.0, 696.0, 662.0, 629.0, 618.0, 701.0, 511.0, 533.0, 534.0, 584.0, 666.0, 598.0, 598.0, 541.0, 581.0, 520.0, 496.0, 439.0, 467.0, 272.0, 241.0, 232.0, 224.0, 228.0, 251.0], "Environmental Sciences Magnet at Hooker School": [859.0, 936.0, 1002.0, 1030.0, 1023.0, 712.0, 719.0, 696.0, 779.0, 646.0, 433.0, 344.0, 279.0, 251.0, 248.0, 213.0, 255.0, 301.0, 318.0, 345.0, 402.0, 403.0, 407.0, 345.0, 275.0, 358.0, 570.0, 596.0, 607.0, 613.0, 610.0, 613.0, 607.0, 606.0, 573.0, 552.0, 556.0, 567.0, 547.0]}};
+const YEARS = RAW.years;
+const SCHOOLS = Object.keys(RAW.schools);
+
+let threshold = 500;
+let yearFromIdx = 0;
+let yearToIdx = YEARS.length - 1;
+let visibleSchools = new Set(SCHOOLS);
+
+function rollingAvg3(series) {
+  return series.map((_, i) => {
+    const start = Math.max(0, i - 2);
+    const slice = series.slice(start, i + 1).filter(v => v != null);
+    if (slice.length === 0) return null;
+    return slice.reduce((a, b) => a + b, 0) / slice.length;
+  });
+}
+
+function computeSeries() {
+  const activeYears = YEARS.slice(yearFromIdx, yearToIdx + 1);
+  const belowCounts = [];
+  const aboveCounts = [];
+  const yearlyAvg = [];
+
+  activeYears.forEach((year, idx) => {
+    const globalIdx = yearFromIdx + idx;
+    let below = 0, above = 0;
+    const vals = [];
+    SCHOOLS.forEach(school => {
+      if (!visibleSchools.has(school)) return;
+      const v = RAW.schools[school][globalIdx];
+      if (v == null) return;
+      vals.push(v);
+      if (v <= threshold) below++; else above++;
+    });
+    belowCounts.push(below);
+    aboveCounts.push(above);
+    yearlyAvg.push(vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null);
+  });
+
+  const rolling = rollingAvg3(yearlyAvg);
+  return { activeYears, belowCounts, aboveCounts, rolling };
+}
+
+const ctx = document.getElementById('mainChart').getContext('2d');
+let chart = new Chart(ctx, {
+  data: {
+    labels: [],
+    datasets: [
+      {
+        type: 'bar', label: '≤ threshold', data: [],
+        backgroundColor: '#DD8452', stack: 'schools', yAxisID: 'y'
+      },
+      {
+        type: 'bar', label: '> threshold', data: [],
+        backgroundColor: '#55A868', stack: 'schools', yAxisID: 'y'
+      },
+      {
+        type: 'line', label: '3-yr rolling avg enrollment', data: [],
+        borderColor: '#111111', backgroundColor: '#111111',
+        borderWidth: 3, pointRadius: 0, spanGaps: true, yAxisID: 'y1'
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (item) => {
+            const v = item.parsed.y;
+            if (v == null) return item.dataset.label + ': n/a';
+            if (item.dataset.type === 'line') return item.dataset.label + ': ' + v.toFixed(0) + ' students';
+            return item.dataset.label + ': ' + v + ' schools';
+          }
+        }
+      }
+    },
+    scales: {
+      x: { stacked: true, ticks: { maxRotation: 60, minRotation: 60, autoSkip: true, maxTicksLimit: 20 } },
+      y: { stacked: true, title: { display: true, text: '# Schools' }, beginAtZero: true },
+      y1: {
+        position: 'right',
+        title: { display: true, text: 'Avg enrollment (3-yr rolling)' },
+        grid: { drawOnChartArea: false },
+        min: 0,
+        max: 1000
+      }
+    }
+  }
+});
+
+function render() {
+  const { activeYears, belowCounts, aboveCounts, rolling } = computeSeries();
+  chart.data.labels = activeYears;
+  chart.data.datasets[0].data = belowCounts;
+  chart.data.datasets[1].data = aboveCounts;
+  chart.data.datasets[2].data = rolling;
+  chart.update();
+
+  document.getElementById('chartSub').textContent =
+    `${activeYears[0]} to ${activeYears[activeYears.length-1]} • threshold ${threshold} students • ${visibleSchools.size} of ${SCHOOLS.length} schools included`;
+}
+
+// threshold slider
+const thresholdSlider = document.getElementById('thresholdSlider');
+thresholdSlider.addEventListener('input', (e) => {
+  threshold = parseInt(e.target.value, 10);
+  document.getElementById('thresholdVal').textContent = threshold + ' students';
+  render();
+});
+
+// year range dropdowns
+const yearFromSel = document.getElementById('yearFrom');
+const yearToSel = document.getElementById('yearTo');
+YEARS.forEach((y, i) => {
+  const o1 = document.createElement('option'); o1.value = i; o1.textContent = y;
+  const o2 = document.createElement('option'); o2.value = i; o2.textContent = y;
+  yearFromSel.appendChild(o1);
+  yearToSel.appendChild(o2);
+});
+yearFromSel.value = 0;
+yearToSel.value = YEARS.length - 1;
+
+yearFromSel.addEventListener('change', () => {
+  yearFromIdx = parseInt(yearFromSel.value, 10);
+  if (yearFromIdx > yearToIdx) { yearToIdx = yearFromIdx; yearToSel.value = yearToIdx; }
+  render();
+});
+yearToSel.addEventListener('change', () => {
+  yearToIdx = parseInt(yearToSel.value, 10);
+  if (yearToIdx < yearFromIdx) { yearFromIdx = yearToIdx; yearFromSel.value = yearFromIdx; }
+  render();
+});
+
+// school checklist
+const listEl = document.getElementById('schoolList');
+SCHOOLS.forEach((school, i) => {
+  const div = document.createElement('div');
+  div.className = 'school-item';
+  const id = 'sch_' + i;
+  div.innerHTML = `<input type="checkbox" id="${id}" checked><label for="${id}">${school}</label>`;
+  listEl.appendChild(div);
+  div.querySelector('input').addEventListener('change', (e) => {
+    if (e.target.checked) visibleSchools.add(school);
+    else visibleSchools.delete(school);
+    render();
+  });
+});
+
+document.getElementById('selectAll').addEventListener('click', () => {
+  visibleSchools = new Set(SCHOOLS);
+  listEl.querySelectorAll('input').forEach(cb => cb.checked = true);
+  render();
+});
+document.getElementById('selectNone').addEventListener('click', () => {
+  visibleSchools = new Set();
+  listEl.querySelectorAll('input').forEach(cb => cb.checked = false);
+  render();
+});
+
+render();
+</script>
+
+</body>
+</html>
