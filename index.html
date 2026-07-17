@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en"> 
+<html lang="en">
 <head>
 <meta charset="UTF-8">
 <title>Hartford Legacy School Enrollment Dashboard</title>
@@ -62,7 +62,6 @@
     margin-bottom: 4px;
   }
 
-  
   .slider-row {
     display: flex;
     justify-content: space-between;
@@ -171,11 +170,6 @@
 <header>
   <h1>Hartford Legacy School Enrollment Dashboard</h1>
   <p>21 public schools, present 30+ of the last 39 years, enrollment never below 200 &nbsp;|&nbsp; Source: NCES/CCD via Urban Institute, cross-checked against CT EdSight</p>
-  <p style="margin-top:6px;">
-    <a href="data/hartford_school_enrollment_by_school_by_year.csv" style="color:#cfe0ee;">Download full enrollment data (CSV)</a>
-    &nbsp;&middot;&nbsp;
-    <a href="data/ccd_vs_edsight_comparison.csv" style="color:#cfe0ee;">Download CCD vs. EdSight comparison (CSV)</a>
-  </p>
 </header>
 
 <div class="layout">
@@ -276,16 +270,16 @@ let chart = new Chart(ctx, {
     datasets: [
       {
         type: 'bar', label: '≤ threshold', data: [],
-        backgroundColor: '#DD8452', stack: 'schools', yAxisID: 'y'
+        backgroundColor: '#DD8452', stack: 'schools', yAxisID: 'y', order: 2
       },
       {
         type: 'bar', label: '> threshold', data: [],
-        backgroundColor: '#55A868', stack: 'schools', yAxisID: 'y'
+        backgroundColor: '#55A868', stack: 'schools', yAxisID: 'y', order: 2
       },
       {
         type: 'line', label: '3-yr rolling avg enrollment', data: [],
         borderColor: '#111111', backgroundColor: '#111111',
-        borderWidth: 3, pointRadius: 0, spanGaps: true, yAxisID: 'y1'
+        borderWidth: 3, pointRadius: 0, spanGaps: true, yAxisID: 'y1', order: 1
       }
     ]
   },
