@@ -270,16 +270,16 @@ let chart = new Chart(ctx, {
     datasets: [
       {
         type: 'bar', label: '≤ threshold', data: [],
-        backgroundColor: '#DD8452', stack: 'schools', yAxisID: 'y', order: 2
+        backgroundColor: '#DD8452', stack: 'schools', yAxisID: 'y', order: 1
       },
       {
         type: 'bar', label: '> threshold', data: [],
-        backgroundColor: '#55A868', stack: 'schools', yAxisID: 'y', order: 2
+        backgroundColor: '#55A868', stack: 'schools', yAxisID: 'y', order: 1
       },
       {
         type: 'line', label: '3-yr rolling avg enrollment', data: [],
         borderColor: '#111111', backgroundColor: '#111111',
-        borderWidth: 3, pointRadius: 0, spanGaps: true, yAxisID: 'y1', order: 1
+        borderWidth: 3, pointRadius: 0, spanGaps: true, yAxisID: 'y1', order: 2
       }
     ]
   },
@@ -302,10 +302,15 @@ let chart = new Chart(ctx, {
     },
     scales: {
       x: { stacked: true, ticks: { maxRotation: 60, minRotation: 60, autoSkip: true, maxTicksLimit: 20 } },
-      y: { stacked: true, title: { display: true, text: '# Schools' }, beginAtZero: true },
+      y: {
+        stacked: true, beginAtZero: true,
+        title: { display: true, text: '# Schools (bars, left axis)', color: '#B5651D', font: { weight: 'bold' } },
+        ticks: { color: '#B5651D' }
+      },
       y1: {
         position: 'right',
-        title: { display: true, text: 'Avg enrollment (3-yr rolling)' },
+        title: { display: true, text: 'Avg enrollment, 3-yr rolling (line, right axis)', color: '#111111', font: { weight: 'bold' } },
+        ticks: { color: '#111111' },
         grid: { drawOnChartArea: false },
         min: 0,
         max: 1000
