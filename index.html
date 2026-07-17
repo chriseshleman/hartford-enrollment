@@ -264,12 +264,23 @@ function updateHeadline(yearlyAvg, activeYears) {
   const pctDisplay = Math.abs(pctChange).toFixed(0);
   const direction = pctChange < 0 ? 'lost' : 'gained';
 
-  h1.innerHTML = `The average Hartford legacy school has ${direction} <span class="num">${pctDisplay}%</span> of its students per building.`;
+  h1.innerHTML = `The average Hartford legacy school has ${direction} <span class="num">${pctDisplay}%</span> of its students.`;
   dek.innerHTML = `In ${activeYears[firstIdx]}, a typical school in this group had about <strong>${Math.round(startVal).toLocaleString()} kids</strong>. In ${activeYears[lastIdx]}, it's about <strong>${Math.round(endVal).toLocaleString()}</strong>. This tracks average enrollment per school, not total district enrollment — the number of schools can rise or fall independently.`;
 }
 
+const lineOnTopPlugin = {
+  id: 'lineOnTop',
+  afterDatasetsDraw(chartInstance) {
+    const lineIdx = chartInstance.data.datasets.findIndex(d => d.type === 'line');
+    if (lineIdx === -1) return;
+    const meta = chartInstance.getDatasetMeta(lineIdx);
+    if (meta && meta.controller) meta.controller.draw();
+  }
+};
+
 const ctx = document.getElementById('mainChart').getContext('2d');
 let chart = new Chart(ctx, {
+  plugins: [lineOnTopPlugin],
   data: {
     labels: [],
     datasets: [
