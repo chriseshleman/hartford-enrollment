@@ -160,7 +160,6 @@
     <div class="legend-row">
       <span><span class="legend-swatch" style="background:var(--orange);"></span>&le; threshold</span>
       <span><span class="legend-swatch" style="background:var(--green);"></span>&gt; threshold</span>
-      <span><span class="legend-line"></span>avg students per school, 3-yr rolling (right axis)</span>
     </div>
   </div>
 
@@ -282,14 +281,55 @@ const lineOnTopPlugin = {
   }
 };
 
+// Labels the line's peak value and its last (most recent) value directly on the chart,
+// so the trend is readable without relying on the legend or hover.
+const lineEndLabelsPlugin = {
+  id: 'lineEndLabels',
+  afterDatasetsDraw(chartInstance) {
+    const lineIdx = chartInstance.data.datasets.findIndex(d => d.type === 'line');
+    if (lineIdx === -1) return;
+    const dataset = chartInstance.data.datasets[lineIdx];
+    const meta = chartInstance.getDatasetMeta(lineIdx);
+    const values = dataset.data;
+
+    let peakIdx = -1, peakVal = -Infinity;
+    let lastIdx = -1;
+    for (let i = 0; i < values.length; i++) {
+      const v = values[i];
+      if (v == null) continue;
+      if (v > peakVal) { peakVal = v; peakIdx = i; }
+      lastIdx = i;
+    }
+    if (peakIdx === -1 || lastIdx === -1) return;
+
+    const ctx2 = chartInstance.ctx;
+    ctx2.save();
+    ctx2.font = '600 12px Inter, sans-serif';
+    ctx2.fillStyle = '#16233B';
+
+    const drawLabel = (idx, value, aboveLine) => {
+      const point = meta.data[idx];
+      if (!point) return;
+      const label = Math.round(value).toLocaleString();
+      const y = aboveLine ? point.y - 12 : point.y + 18;
+      ctx2.textAlign = idx === 0 ? 'left' : (idx === values.length - 1 ? 'right' : 'center');
+      ctx2.fillText(label, point.x, y);
+    };
+
+    drawLabel(peakIdx, peakVal, true);
+    if (lastIdx !== peakIdx) drawLabel(lastIdx, values[lastIdx], true);
+    ctx2.restore();
+  }
+};
+
 const ctx = document.getElementById('mainChart').getContext('2d');
 let chart = new Chart(ctx, {
-  plugins: [lineOnTopPlugin],
+  plugins: [lineOnTopPlugin, lineEndLabelsPlugin],
   data: {
     labels: [],
     datasets: [
-      { type: 'bar', label: '≤ threshold', data: [], backgroundColor: '#DD8452', stack: 'schools', yAxisID: 'y', order: 1 },
-      { type: 'bar', label: '> threshold', data: [], backgroundColor: '#55A868', stack: 'schools', yAxisID: 'y', order: 1 },
+      { type: 'bar', label: '≤ threshold', data: [], backgroundColor: 'rgba(221,132,82,0.3)', stack: 'schools', yAxisID: 'y', order: 1 },
+      { type: 'bar', label: '> threshold', data: [], backgroundColor: 'rgba(85,168,104,0.3)', stack: 'schools', yAxisID: 'y', order: 1 },
       { type: 'line', label: '3-yr rolling avg enrollment', data: [], borderColor: '#16233B', backgroundColor: '#16233B', borderWidth: 3, pointRadius: 0, spanGaps: true, yAxisID: 'y1', order: 2 }
     ]
   },
