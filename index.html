@@ -546,9 +546,8 @@ const ESTIMATED_TOTAL_2001_2015 = 22000;
 const CHOICE_YEARS_FULL = YEARS;
 const CHOICE_DATA_FULL = {
   "Traditional public schools": [],
-  "Interdistrict/other magnets": [],
-  "Charters & choice programs": [],
-  "Vo-tech schools": []
+  "Vo-tech schools": [],
+  "Magnets & choice programs": []
 };
 
 // Fill in data year by year
@@ -560,9 +559,8 @@ YEARS.forEach((year, idx) => {
     const actualYear = yearNum - 2016;
     if (actualYear < 9) {
       CHOICE_DATA_FULL["Traditional public schools"].push(EDSIGHT_TRADITIONAL[actualYear]);
-      CHOICE_DATA_FULL["Interdistrict/other magnets"].push(EDSIGHT_MAGNET[actualYear]);
-      CHOICE_DATA_FULL["Charters & choice programs"].push(EDSIGHT_OPENCHOICE[actualYear] + EDSIGHT_CHARTERS[actualYear] + EDSIGHT_OTHER[actualYear]);
       CHOICE_DATA_FULL["Vo-tech schools"].push(EDSIGHT_VOTECH[actualYear]);
+      CHOICE_DATA_FULL["Magnets & choice programs"].push(EDSIGHT_MAGNET[actualYear] + EDSIGHT_OPENCHOICE[actualYear] + EDSIGHT_CHARTERS[actualYear] + EDSIGHT_OTHER[actualYear]);
     }
   } else if (yearNum >= 2000) {
     // 2000-2015: Scale estimates to match EdSight baseline
@@ -572,13 +570,11 @@ YEARS.forEach((year, idx) => {
     const chartersAndChoiceShare = (yearNum >= 1998 ? 0.04 + ((yearNum - 1998) * 0.007) : 0.01);
     const voTechShare = 0.04;
     const traditional = totalEst * (1 - magnetShare - chartersAndChoiceShare - voTechShare);
-    const magnet = totalEst * magnetShare;
-    const chartersChoice = totalEst * chartersAndChoiceShare;
+    const magnetsAndChoice = totalEst * (magnetShare + chartersAndChoiceShare);
     const voTech = totalEst * voTechShare;
     CHOICE_DATA_FULL["Traditional public schools"].push(Math.round(traditional));
-    CHOICE_DATA_FULL["Interdistrict/other magnets"].push(Math.round(magnet));
-    CHOICE_DATA_FULL["Charters & choice programs"].push(Math.round(chartersChoice));
     CHOICE_DATA_FULL["Vo-tech schools"].push(Math.round(voTech));
+    CHOICE_DATA_FULL["Magnets & choice programs"].push(Math.round(magnetsAndChoice));
   } else {
     // 1986-1999: Scale estimates to match EdSight baseline with minimal choice
     const totalEst = ESTIMATED_TOTAL_1986_2000 * (1 - (1999 - yearNum) * 0.001); // slight growth back to 2000
@@ -586,21 +582,18 @@ YEARS.forEach((year, idx) => {
     const chartersAndChoiceShare = yearNum >= 1997 ? (yearNum - 1997) * 0.015 : 0.002; // Tiny until 1997, then grows
     const voTechShare = 0.04;
     const traditional = totalEst * (1 - magnetShare - chartersAndChoiceShare - voTechShare);
-    const magnet = totalEst * magnetShare;
-    const chartersChoice = totalEst * chartersAndChoiceShare;
+    const magnetsAndChoice = totalEst * (magnetShare + chartersAndChoiceShare);
     const voTech = totalEst * voTechShare;
     CHOICE_DATA_FULL["Traditional public schools"].push(Math.round(traditional));
-    CHOICE_DATA_FULL["Interdistrict/other magnets"].push(Math.round(magnet));
-    CHOICE_DATA_FULL["Charters & choice programs"].push(Math.round(chartersChoice));
     CHOICE_DATA_FULL["Vo-tech schools"].push(Math.round(voTech));
+    CHOICE_DATA_FULL["Magnets & choice programs"].push(Math.round(magnetsAndChoice));
   }
 });
 
 const CHOICE_COLORS_FULL = {
-  "Traditional public schools": '#B5482F',
-  "Interdistrict/other magnets": '#55A868',
-  "Charters & choice programs": '#DD8452',
-  "Vo-tech schools": '#E8A33D'
+  "Traditional public schools": '#D3D3D3',
+  "Vo-tech schools": '#808080',
+  "Magnets & choice programs": '#2D2D2D'
 };
 
 const choiceCtx = document.getElementById('choiceChart').getContext('2d');
