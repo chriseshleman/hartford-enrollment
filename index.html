@@ -117,6 +117,22 @@
   .source { font-size: 12px; color: var(--slate); border-top: 1px solid var(--hairline); padding-top: 14px; }
   .source a { color: var(--slate); }
 
+  .section-divider { border-top: 1px solid var(--hairline); margin: 40px 0 32px; }
+  .section-h2 {
+    font-family: 'Fraunces', serif; font-weight: 600;
+    font-size: clamp(22px, 3vw, 30px); line-height: 1.15; letter-spacing: -.01em;
+    margin: 0 0 12px;
+  }
+  .section-intro { font-size: 15.5px; line-height: 1.6; color: var(--slate); max-width: 68ch; margin: 0 0 22px; }
+
+  .chart-footnote { font-size: 11.5px; color: var(--slate); line-height: 1.5; margin-top: 10px; }
+
+  .stat-pair-body { display: flex; gap: 28px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
+  .stat-pair-chart { flex: 0 0 280px; max-width: 100%; }
+  .stat-pair-text { flex: 1 1 320px; font-size: 14.5px; line-height: 1.6; color: var(--slate); }
+  .stat-pair-text p { margin: 0 0 12px; }
+  .stat-pair-text p:last-child { margin-bottom: 0; }
+
   ::-webkit-scrollbar { width: 8px; }
   ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
 
@@ -199,6 +215,56 @@
 
   <div class="source">Source: NCES Common Core of Data (via the Urban Institute Education Data Portal), cross-checked against CT State Department of Education EdSight data. Covers 21 Hartford public schools present for 30+ of the last 39 years with enrollment never below 200.</div>
 
+  <div class="section-divider"></div>
+
+  <div class="eyebrow">A follow-up question</div>
+  <h2 class="section-h2">Where did the students go?</h2>
+  <p class="section-intro">The obvious guess is "fewer kids in the city." That's true, but it's not the whole story. Enrollment records show Hartford kids didn't just disappear &mdash; a growing share of them started attending school somewhere other than a traditional Hartford-run building.</p>
+
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Hartford-resident students, by where they attend school</div>
+        <div class="card-sub">2016-17 to 2024-25</div>
+      </div>
+    </div>
+    <div class="chart-wrap" style="height:380px;">
+      <canvas id="choiceChart"></canvas>
+    </div>
+    <div class="legend-row" id="choiceLegend"></div>
+  </div>
+
+  <div class="note">
+    <b>The pattern:</b> in 2016-17, roughly half of Hartford's public-school kids (11,100 of 23,300) attended a traditional Hartford-run school. By 2024-25, that was down to about a third (7,600 of 21,200) &mdash; a 32% drop in just eight years. Total Hartford-resident enrollment across every option combined fell only 9% over the same stretch. Most of the gap shows up at interdistrict Sheff magnet schools, where Hartford's enrollment grew from about 7,400 to about 9,000 students.
+    <div class="chart-footnote">"Other" bundles small in-district specialized programs and other interdistrict magnets, some of which the state suppresses to exact counts under 6 students for privacy. CT Technical Education and Career System figures for 2019-20, 2021-22, and 2022-23 are interpolated from neighboring years for the same reason. Source: CT State Department of Education, Resident Town enrollment data.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Is the city just running out of kids?</div>
+        <div class="card-sub">Population vs. total district enrollment, indexed to 2000</div>
+      </div>
+    </div>
+    <div class="stat-pair-body">
+      <div class="stat-pair-chart">
+        <div class="chart-wrap" style="height:220px;">
+          <canvas id="popChart"></canvas>
+        </div>
+      </div>
+      <div class="stat-pair-text">
+        <p>Somewhat &mdash; but that's not the main driver. Hartford's under-18 population fell about 23% from 2000 to 2020, per the Census. Total enrollment across all Hartford Public Schools buildings &mdash; which includes magnet schools that also serve suburban kids &mdash; fell about 20% over the same period, a similar pace. If population loss were the whole story, that's roughly what you'd expect.</p>
+        <p>What population decline doesn't explain is the sharper, faster drop happening specifically in traditional, non-magnet Hartford schools: down 32% in resident enrollment in just the eight years shown above. That gap looks like choice, not demographics.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="note">
+    <b>The implication:</b> Hartford-run neighborhood schools now share a roughly stable pool of Hartford kids with interdistrict magnets, charter schools, technical high schools, and suburban Open Choice programs &mdash; options that barely existed, or were far smaller, a generation ago. That's the flip side of "fewer students per school": it isn't just that buildings are emptying out. More schools and institutions are now drawing from a similar-sized pool of kids, and taxpayers are funding more buildings to do it.
+  </div>
+
+  <div class="source">Sources: CT State Department of Education EdSight (Resident Town enrollment data, Public School Enrollment Export); NCES Common Core of Data via the Urban Institute Education Data Portal (district-level totals); U.S. Census Bureau (2000, 2010, 2020 Decennial Census, via CTData.org).</div>
+
 </div>
 
 <script>
@@ -277,8 +343,6 @@ const lineOnTopPlugin = {
   }
 };
 
-// Labels the line's peak value and its last (most recent) value directly on the chart,
-// so the trend is readable without relying on the legend or hover.
 const lineEndLabelsPlugin = {
   id: 'lineEndLabels',
   afterDatasetsDraw(chartInstance) {
@@ -379,14 +443,12 @@ function render() {
   updateHeadline(yearlyAvg, activeYears);
 }
 
-// threshold slider
 document.getElementById('thresholdSlider').addEventListener('input', (e) => {
   threshold = parseInt(e.target.value, 10);
   document.getElementById('thresholdVal').textContent = threshold + ' students';
   render();
 });
 
-// year range dropdowns
 const yearFromSel = document.getElementById('yearFrom');
 const yearToSel = document.getElementById('yearTo');
 YEARS.forEach((y, i) => {
@@ -415,7 +477,6 @@ yearToSel.addEventListener('change', () => {
   render();
 });
 
-// preset chips
 document.querySelectorAll('.chip').forEach(chip => {
   chip.addEventListener('click', () => {
     document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
@@ -431,7 +492,6 @@ document.querySelectorAll('.chip').forEach(chip => {
   });
 });
 
-// collapsible school checklist
 const schoolListWrap = document.getElementById('schoolListWrap');
 document.getElementById('toggleSchoolList').addEventListener('click', () => {
   schoolListWrap.classList.toggle('open');
@@ -463,6 +523,97 @@ document.getElementById('selectNone').addEventListener('click', () => {
 });
 
 render();
+
+const CHOICE_YEARS = ["2016-17","2017-18","2018-19","2019-20","2020-21","2021-22","2022-23","2023-24","2024-25"];
+const CHOICE_DATA = {
+  "Traditional public schools": [11096,10978,10032,9370,8457,8363,8231,7951,7579],
+  "Sheff interdistrict magnet": [7439,7317,7569,7828,8295,8001,8291,8785,8996],
+  "Open Choice (suburban districts)": [2076,2075,2103,2112,2114,2063,2058,2061,2081],
+  "Public charter schools": [1530,1617,1612,1666,1688,1579,1445,1363,1318],
+  "CT technical high schools": [630,661,606,618,631,612,594,575,610],
+  "Other magnet & small programs": [488,481,574,692,532,648,651,571,607]
+};
+const CHOICE_COLORS = {
+  "Traditional public schools": '#B5482F',
+  "Sheff interdistrict magnet": '#55A868',
+  "Open Choice (suburban districts)": '#DD8452',
+  "Public charter schools": '#16233B',
+  "CT technical high schools": '#E8A33D',
+  "Other magnet & small programs": '#D6DAD6'
+};
+
+const choiceCtx = document.getElementById('choiceChart').getContext('2d');
+new Chart(choiceCtx, {
+  type: 'bar',
+  data: {
+    labels: CHOICE_YEARS,
+    datasets: Object.keys(CHOICE_DATA).map(label => ({
+      label,
+      data: CHOICE_DATA[label],
+      backgroundColor: CHOICE_COLORS[label],
+      stack: 'choice'
+    }))
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (item) => item.dataset.label + ': ' + item.parsed.y.toLocaleString() + ' students'
+        }
+      }
+    },
+    scales: {
+      x: { stacked: true },
+      y: {
+        stacked: true, beginAtZero: true,
+        title: { display: true, text: 'Hartford-resident students' }
+      }
+    }
+  }
+});
+
+const choiceLegendEl = document.getElementById('choiceLegend');
+Object.keys(CHOICE_DATA).forEach(label => {
+  const span = document.createElement('span');
+  span.innerHTML = `<span class="legend-swatch" style="background:${CHOICE_COLORS[label]};"></span>${label}`;
+  choiceLegendEl.appendChild(span);
+});
+
+const POP_YEARS = ['2000', '2010', '2020'];
+const POP_RAW = [36568, 32217, 28003];
+const ENROLL_RAW = [22538, 21216, 18081];
+const idx = arr => arr.map(v => Math.round((v / arr[0]) * 1000) / 10);
+
+const popCtx = document.getElementById('popChart').getContext('2d');
+new Chart(popCtx, {
+  type: 'line',
+  data: {
+    labels: POP_YEARS,
+    datasets: [
+      { label: 'Under-18 population', data: idx(POP_RAW), borderColor: '#B5482F', backgroundColor: '#B5482F', borderWidth: 3, pointRadius: 4, tension: 0 },
+      { label: 'Total district enrollment', data: idx(ENROLL_RAW), borderColor: '#16233B', backgroundColor: '#16233B', borderWidth: 3, pointRadius: 4, tension: 0 }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: { position: 'bottom', labels: { boxWidth: 11, font: { size: 11.5 } } },
+      tooltip: {
+        callbacks: {
+          label: (item) => item.dataset.label + ': ' + item.parsed.y.toFixed(1) + ' (2000 = 100)'
+        }
+      }
+    },
+    scales: {
+      y: { title: { display: true, text: 'Index (2000 = 100)' } }
+    }
+  }
+});
 </script>
 
 </body>
