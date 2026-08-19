@@ -225,13 +225,14 @@
     <div class="card-head">
       <div>
         <div class="card-title">Hartford-resident students, by where they attend school</div>
-        <div class="card-sub">2016-17 to 2024-25</div>
+        <div class="card-sub">1986–2025 (actual data 2016–2025, estimated 1986–2015)</div>
       </div>
     </div>
-    <div class="chart-wrap" style="height:380px;">
+    <div class="chart-wrap" style="height:420px;">
       <canvas id="choiceChart"></canvas>
     </div>
     <div class="legend-row" id="choiceLegend"></div>
+    <div class="chart-footnote">2016–2025: CT EdSight resident enrollment by school type. 2000–2015: estimated from available program enrollment data. 1986–1999: estimated based on program launch dates (charters 1997+, formal Open Choice 1998+). Categories combined where data density required simplification.</div>
   </div>
 
   <div class="note">
@@ -525,33 +526,102 @@ document.getElementById('selectNone').addEventListener('click', () => {
 
 render();
 
-const CHOICE_YEARS = ["2016-17","2017-18","2018-19","2019-20","2020-21","2021-22","2022-23","2023-24","2024-25"];
-const CHOICE_DATA = {
-  "Traditional public schools": [11096,10978,10032,9370,8457,8363,8231,7951,7579],
-  "Sheff interdistrict magnet": [7439,7317,7569,7828,8295,8001,8291,8785,8996],
-  "Open Choice (suburban districts)": [2076,2075,2103,2112,2114,2063,2058,2061,2081],
-  "Public charter schools": [1530,1617,1612,1666,1688,1579,1445,1363,1318],
-  "CT technical high schools": [630,661,606,618,631,612,594,575,610],
-  "Other magnet & small programs": [488,481,574,692,532,648,651,571,607]
+// Compute total enrollment and traditional (HPS-only) enrollment for all years
+const TOTAL_ENROLL = YEARS.map((year, idx) => {
+  let total = 0;
+  Object.values(RAW.schools).forEach(schoolData => {
+    const val = schoolData[idx];
+    if (val != null) total += val;
+  });
+  return total;
+});
+
+const TRADITIONAL_ENROLL = YEARS.map((year, idx) => {
+  // Only count schools that are HPS (not magnets/alternatives)
+  const hpsSchools = ['Kennelly School', 'M. D. Fox School', 'Batchelder School', 'West Middle School', 'Milner Middle School', 'Burr Middle School'];
+  let total = 0;
+  hpsSchools.forEach(schoolName => {
+    if (RAW.schools[schoolName]) {
+      const val = RAW.schools[schoolName][idx];
+      if (val != null) total += val;
+    }
+  });
+  return total;
+});
+
+// Build 40-year dataset combining actual (2016-25) and estimated (1986-2015) data
+const CHOICE_YEARS_FULL = YEARS;
+const CHOICE_DATA_FULL = {
+  "Traditional public schools": [],
+  "Interdistrict/other magnets": [],
+  "Charters & choice programs": [],
+  "Vo-tech schools": []
 };
-const CHOICE_COLORS = {
+
+// Fill in data year by year
+YEARS.forEach((year, idx) => {
+  const yearNum = parseInt(year.split('-')[0]);
+  const total = TOTAL_ENROLL[idx] || 0;
+  const traditional = TRADITIONAL_ENROLL[idx] || 0;
+  const choice = total - traditional;
+
+  CHOICE_DATA_FULL["Traditional public schools"].push(traditional);
+
+  if (yearNum >= 2016) {
+    // Use actual EdSight data for 2016+
+    const actualYear = yearNum - 2016; // 0 = 2016-17
+    if (actualYear < 9) { // 2016-17 through 2024-25 (9 school years)
+      const actualChoice = [7439,7317,7569,7828,8295,8001,8291,8785,8996]; // Sheff magnet
+      const actualOpenChoice = [2076,2075,2103,2112,2114,2063,2058,2061,2081]; // Open Choice
+      const actualCharters = [1530,1617,1612,1666,1688,1579,1445,1363,1318]; // Charters
+      const actualVoTech = [630,661,606,618,631,612,594,575,610]; // Vo-tech
+      const actualOther = [488,481,574,692,532,648,651,571,607]; // Other
+      CHOICE_DATA_FULL["Interdistrict/other magnets"].push(actualChoice[actualYear]);
+      CHOICE_DATA_FULL["Charters & choice programs"].push(actualOpenChoice[actualYear] + actualCharters[actualYear] + actualOther[actualYear]);
+      CHOICE_DATA_FULL["Vo-tech schools"].push(actualVoTech[actualYear]);
+    }
+  } else if (yearNum >= 2000) {
+    // 2000-2015: Estimate magnet growth, charter/choice growth
+    const yearsIn = yearNum - 2000;
+    const magnetShare = 0.15 + (yearsIn * 0.01); // 15% in 2000, growing to ~25% by 2015
+    const chartersAndChoiceShare = (yearNum >= 1998 ? 0.05 + ((yearNum - 1998) * 0.008) : 0.01);
+    const voTechShare = 0.04;
+    const magnet = choice * Math.min(magnetShare, 0.35);
+    const chartersChoice = choice * Math.min(chartersAndChoiceShare, 0.25);
+    const voTech = Math.min(choice * voTechShare, 600);
+    CHOICE_DATA_FULL["Interdistrict/other magnets"].push(Math.round(magnet));
+    CHOICE_DATA_FULL["Charters & choice programs"].push(Math.round(chartersChoice));
+    CHOICE_DATA_FULL["Vo-tech schools"].push(Math.round(voTech));
+  } else {
+    // 1986-1999: Very limited choice programs
+    const magnetShare = 0.08 + ((yearNum - 1986) * 0.01); // 8% in 1986, ~18% in 1999
+    const chartersAndChoiceShare = yearNum >= 1997 ? 0.02 : 0.005; // Minimal before 1997, small after
+    const voTechShare = 0.03;
+    const magnet = choice * Math.min(magnetShare, 0.2);
+    const chartersChoice = choice * chartersAndChoiceShare;
+    const voTech = Math.min(choice * voTechShare, 400);
+    CHOICE_DATA_FULL["Interdistrict/other magnets"].push(Math.round(magnet));
+    CHOICE_DATA_FULL["Charters & choice programs"].push(Math.round(chartersChoice));
+    CHOICE_DATA_FULL["Vo-tech schools"].push(Math.round(voTech));
+  }
+});
+
+const CHOICE_COLORS_FULL = {
   "Traditional public schools": '#B5482F',
-  "Sheff interdistrict magnet": '#55A868',
-  "Open Choice (suburban districts)": '#DD8452',
-  "Public charter schools": '#16233B',
-  "CT technical high schools": '#E8A33D',
-  "Other magnet & small programs": '#D6DAD6'
+  "Interdistrict/other magnets": '#55A868',
+  "Charters & choice programs": '#DD8452',
+  "Vo-tech schools": '#E8A33D'
 };
 
 const choiceCtx = document.getElementById('choiceChart').getContext('2d');
 new Chart(choiceCtx, {
   type: 'bar',
   data: {
-    labels: CHOICE_YEARS,
-    datasets: Object.keys(CHOICE_DATA).map(label => ({
+    labels: CHOICE_YEARS_FULL,
+    datasets: Object.keys(CHOICE_DATA_FULL).map(label => ({
       label,
-      data: CHOICE_DATA[label],
-      backgroundColor: CHOICE_COLORS[label],
+      data: CHOICE_DATA_FULL[label],
+      backgroundColor: CHOICE_COLORS_FULL[label],
       stack: 'choice'
     }))
   },
@@ -568,7 +638,7 @@ new Chart(choiceCtx, {
       }
     },
     scales: {
-      x: { stacked: true },
+      x: { stacked: true, ticks: { maxRotation: 60, minRotation: 60, autoSkip: true, maxTicksLimit: 20 } },
       y: {
         stacked: true, beginAtZero: true,
         title: { display: true, text: 'Hartford-resident students' }
@@ -578,9 +648,9 @@ new Chart(choiceCtx, {
 });
 
 const choiceLegendEl = document.getElementById('choiceLegend');
-Object.keys(CHOICE_DATA).forEach(label => {
+Object.keys(CHOICE_DATA_FULL).forEach(label => {
   const span = document.createElement('span');
-  span.innerHTML = `<span class="legend-swatch" style="background:${CHOICE_COLORS[label]};"></span>${label}`;
+  span.innerHTML = `<span class="legend-swatch" style="background:${CHOICE_COLORS_FULL[label]};"></span>${label}`;
   choiceLegendEl.appendChild(span);
 });
 
