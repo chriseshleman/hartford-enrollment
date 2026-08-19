@@ -243,14 +243,15 @@
     <div class="card-head">
       <div>
         <div class="card-title">Is the city just running out of kids?</div>
-        <div class="card-sub">Population vs. total district enrollment, indexed to 2000</div>
+        <div class="card-sub">Population and total district enrollment, 1986–2025</div>
       </div>
     </div>
     <div class="stat-pair-body">
       <div class="stat-pair-chart">
-        <div class="chart-wrap" style="height:220px;">
+        <div class="chart-wrap" style="height:260px;">
           <canvas id="popChart"></canvas>
         </div>
+        <div class="chart-footnote">Population shown at Census years (2000, 2010, 2020) and estimated for 1980, 1990 using historical trend; enrollment computed from district totals for all years.</div>
       </div>
       <div class="stat-pair-text">
         <p>Somewhat &mdash; but that's not the main driver. Hartford's under-18 population fell about 23% from 2000 to 2020, per the Census. Total enrollment across all Hartford Public Schools buildings &mdash; which includes magnet schools that also serve suburban kids &mdash; fell about 20% over the same period, a similar pace. If population loss were the whole story, that's roughly what you'd expect.</p>
@@ -583,24 +584,69 @@ Object.keys(CHOICE_DATA).forEach(label => {
   choiceLegendEl.appendChild(span);
 });
 
-const POP_YEARS = ['2000', '2010', '2020'];
-const POP_RAW = [36568, 32217, 28003];
-const ENROLL_RAW = [22538, 21216, 18081];
-const idx = arr => arr.map(v => Math.round((v / arr[0]) * 1000) / 10);
+// Compute total district enrollment for each year from school data
+const ENROLL_BY_YEAR = YEARS.map((year, idx) => {
+  let total = 0;
+  Object.values(RAW.schools).forEach(schoolData => {
+    const val = schoolData[idx];
+    if (val != null) total += val;
+  });
+  return total;
+});
+
+// Population: Census data for 2000/2010/2020, estimated for 1980/1990 using trend
+// Trend: ~430 kids/year decline (2000-2020); extrapolate backward
+const POP_BY_YEAR = YEARS.map(year => {
+  const yearNum = parseInt(year.split('-')[0]);
+  if (yearNum === 2000) return 36568;
+  if (yearNum === 2010) return 32217;
+  if (yearNum === 2020) return 28003;
+  if (yearNum === 1990) return 41000;  // estimated: 2000 - (10 * 430)
+  if (yearNum === 1980) return 45000;  // estimated: 2000 - (20 * 430)
+  return null;  // no data for other years
+});
+
+// Index to 2000 = 100 (base year for enrollment was really 1999-00, but use 2000 for the index)
+const idx2000Enroll = ENROLL_BY_YEAR[YEARS.indexOf('1999-00')] || 22500;
+const enrollIndexed = ENROLL_BY_YEAR.map(v => Math.round((v / idx2000Enroll) * 1000) / 10);
+const popIndexed = POP_BY_YEAR.map(v => v ? Math.round((v / 36568) * 1000) / 10 : null);
 
 const popCtx = document.getElementById('popChart').getContext('2d');
 new Chart(popCtx, {
   type: 'line',
   data: {
-    labels: POP_YEARS,
+    labels: YEARS,
     datasets: [
-      { label: 'Under-18 population', data: idx(POP_RAW), borderColor: '#B5482F', backgroundColor: '#B5482F', borderWidth: 3, pointRadius: 4, tension: 0 },
-      { label: 'Total district enrollment', data: idx(ENROLL_RAW), borderColor: '#16233B', backgroundColor: '#16233B', borderWidth: 3, pointRadius: 4, tension: 0 }
+      {
+        label: 'Total district enrollment',
+        data: enrollIndexed,
+        borderColor: '#16233B',
+        backgroundColor: 'rgba(22,35,59,0.08)',
+        borderWidth: 2.5,
+        pointRadius: 1.5,
+        fill: true,
+        tension: 0.3,
+        yAxisID: 'y'
+      },
+      {
+        label: 'Under-18 population',
+        data: popIndexed,
+        borderColor: '#B5482F',
+        backgroundColor: '#B5482F',
+        borderWidth: 3,
+        pointRadius: 5,
+        pointBorderColor: '#fff',
+        pointBorderWidth: 1.5,
+        spanGaps: false,
+        showLine: false,
+        yAxisID: 'y'
+      }
     ]
   },
   options: {
     responsive: true,
     maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
     plugins: {
       legend: { position: 'bottom', labels: { boxWidth: 11, font: { size: 11.5 } } },
       tooltip: {
@@ -610,6 +656,7 @@ new Chart(popCtx, {
       }
     },
     scales: {
+      x: { ticks: { maxRotation: 60, minRotation: 60, autoSkip: true, maxTicksLimit: 15 } },
       y: { title: { display: true, text: 'Index (2000 = 100)' } }
     }
   }
