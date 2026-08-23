@@ -113,6 +113,8 @@
   .section-intro { font-size: 15.5px; line-height: 1.6; color: var(--slate); max-width: 68ch; margin: 0 0 22px; }
 
   .chart-footnote { font-size: 11.5px; color: var(--slate); line-height: 1.5; margin-top: 10px; }
+  code { font-family: 'Roboto Mono', monospace; font-size: .88em; background: var(--paper-2);
+         padding: 1px 5px; border-radius: 4px; color: var(--ink); }
 
   .stat-pair-body { display: flex; gap: 28px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
   .stat-pair-chart { flex: 0 0 280px; max-width: 100%; }
@@ -134,8 +136,8 @@
   <div class="masthead">
     <div class="brand"><b>Hartford Public Schools</b> · Enrollment Explorer</div>
     <div class="links">
-      <a href="data/hartford_school_enrollment_by_school_by_year.csv">Full data (CSV)</a>
-      <a href="data/ccd_vs_edsight_comparison.csv">State comparison (CSV)</a>
+      <a href="data/hartford_school_enrollment_by_school_by_year.csv">Chart 1 data (CSV)</a>
+      <a href="data/hartford_choice_panel.csv">Chart 2 data (CSV)</a>
     </div>
   </div>
 
@@ -223,19 +225,60 @@
   <div class="card">
     <div class="card-title" style="margin-bottom:10px;">Chart 1 &mdash; average enrollment</div>
     <div class="stat-pair-text" style="flex:1 1 100%;">
-      <p><b>1. What it measures.</b> Kids attending Hartford district schools, wherever those kids live. That includes suburban students in Hartford's inter-district magnets. A "legacy" school is just one that clears the two filters in step 4.</p>
-      <p><b>2. Sources.</b> Two of them, joined on the twelve-digit federal school ID. The National Center for Education Statistics Common Core of Data <i>Public School Universe Survey</i> covers 1986-87 to 1997-98, as twelve annual files. The Urban Institute's Education Data Portal picks up 1998 to 2024.</p>
-      <p><b>3. Using the old files.</b> The enrollment field shifts position from year to year, as the federal agency widened its grade columns &mdash; character 243 in 1986-87, 258 by 1988, 263 from 1991. Offsets came from the published record layouts, then got checked: every Hartford school reporting straight through matched the agency's own ELSI tool. The odd one-year gap is filled with an average of the years around it.</p>
-      <p><b>4. Choosing the schools.</b> Two filters: at least thirty straight years of data, and never a year below 150 kids. Twenty-four of Hartford's seventy schools make the cut. That 150 floor is there to keep out tiny specialty programs, not schools that shrank &mdash; shrinking is the whole point, so filtering it out would erase what we're looking at.</p>
+      <p><b>What it's counting.</b> Kids attending Hartford district schools, wherever those kids happen to live. Suburban students sitting in Hartford's inter-district magnets are in here too. A "legacy" school is just one that clears the two filters described further down.</p>
+
+      <p><b>Getting the old years, 1986-87 to 1997-98.</b> These come from the federal government &mdash; the National Center for Education Statistics runs something called the Common Core of Data, and inside it the <i>Public School Universe Survey</i> counts every public school in the country, every year, going back to 1986-87.</p>
+      <p>The catch is the format. There's one file per school year, and each is a plain text file where the data sits at fixed character positions rather than in tidy columns. Twelve files, eight to ten megabytes each. They're also national, not state-by-state: the agency splits each year into three alphabetical chunks, and Connecticut lands in the one covering Alabama through Iowa. So each download is mostly other states' schools.</p>
+      <p>Three pieces get pulled out of every line. Characters 1 through 12 are the school's permanent federal ID number. Characters 77 through 106 are its name. And somewhere further along sits total enrollment &mdash; which is where it gets annoying, because that field moves. It's at character 243 in 1986-87, shifts to 258 by 1988, and lands at 263 from 1991 onward, because the agency kept widening the columns that hold grade-by-grade counts. Read the wrong position and you get a single grade's headcount instead of the school total. It looks perfectly plausible and it's completely wrong.</p>
+      <p>Hartford's schools are the ones whose ID starts <code>0901920</code>. That's the district's federal code &mdash; 09 for Connecticut, then the district number.</p>
+
+      <p><b>Checking that the old years are right.</b> Reading data out of character positions is exactly the kind of thing that fails quietly, so it got tested. The same agency runs a friendlier web tool called ELSI that spits out a spreadsheet. Pulling every Connecticut school from ELSI and comparing gave 585 values across seventeen Hartford schools and twelve years. All 585 matched, exactly. That's the check that says the character positions are right.</p>
+
+      <p><b>Getting the recent years, 1998 to 2024.</b> Same underlying federal data, but the Urban Institute republishes it in a form you can actually download as a spreadsheet. Their Education Data Portal, filtered to Connecticut and the Hartford School District, gives 1,146 rows covering 68 schools &mdash; with columns for year, the same federal school ID, school name, enrollment, and a yes/no flag for whether a school is a magnet.</p>
+
+      <p><b>Stitching the two together.</b> The join happens on that twelve-digit federal ID, never on school name. Hartford renamed a lot of these buildings over forty years &mdash; Fisher School became STEM Magnet at Annie Fisher, Dwight became Dwight-Bellizzi Dual Language Academy, and so on. Matching on names would split one school into several. Each school gets labelled with whatever it was called most recently.</p>
+
+      <p><b>Filling small holes.</b> Every school gets a row for every year, so missing years show up as blanks rather than silently vanishing. Where a school reports, goes blank for one year, then reports again at a similar size, that's almost certainly a paperwork gap rather than a school that shut for twelve months and reopened. Those get filled with an average of the reported years on either side. Fourteen values across six schools, each one flagged in the published data and printed every time the code runs. Gaps at the start or end of a school's life &mdash; before it opened, after it closed &mdash; stay empty.</p>
+
+      <p><b>Picking the 24 schools.</b> Two rules. A school needs at least thirty straight years of data, and it can't ever drop below 150 kids in a single year. Twenty-four of Hartford's seventy schools clear both.</p>
+      <p>The 150 floor deserves a note, because it's the one that could quietly bias things. It's there to keep out tiny specialty programs &mdash; a homebound program averaging ten students, pre-K sites, the small themed academies inside a high school. It is emphatically <i>not</i> meant to exclude schools that shrank. Shrinking is the whole subject. An earlier draft used 200 and knocked out two schools purely for getting smaller, which would have quietly trimmed the bottom off the exact trend the chart exists to show.</p>
+
+      <p><b>Turning that into the chart.</b> For each year: average the enrollment across the included schools, smooth it with a three-year rolling average so a single odd year doesn't create a false spike, and count how many schools sit above and below 500 students. That's the line and the bars.</p>
     </div>
   </div>
 
   <div class="card">
     <div class="card-title" style="margin-bottom:10px;">Chart 2 &mdash; Hartford-resident students by school type</div>
     <div class="stat-pair-text" style="flex:1 1 100%;">
-      <p><b>1. What it measures.</b> Hartford residents, wherever they go to school &mdash; a different group than chart one. A Hartford kid bussed out to a suburb shows up here and not there. A suburban kid in a Hartford magnet shows up there and not here.</p>
-      <p><b>2. Sources.</b> 2016-17 onward comes straight from the Connecticut State Department of Education's EdSight Resident Town export. Traditional enrollment before 2016 comes from federal counts of Hartford's non-magnet schools. Magnets and choice, 2002-03 to 2015-16, come from the <i>Sheff v. O'Neill</i> compliance rate &mdash; the share of Hartford minority students in reduced-isolation settings, which the state had to report to the court every year. Six anchor years, straight lines between them. Vo-tech is scaled off A. I. Prince Technical High School, here in Hartford, which federal data covers without a break from 1986-87.</p>
-      <p><b>3. Caveats.</b> No one seems to have counted the resident total before 2016 &mdash; here it falls out of the math once you have traditional enrollment, vo-tech, and the court's share. Where the <i>Sheff</i> record contradicts itself, the lower number wins, which undersells the shift rather than overselling it; the small dip at 2006-07 is one of those. In 2013-14 the court narrowed what counted as "minority," so the rate either side of that line isn't quite measuring the same thing. Hatched bars also bounce around more than solid ones, because they mix a federal headcount with an estimated rate &mdash; treat the wobble as noise. Before 2002 there's barely anything to piece together: charters opened in 1997, Open Choice in 1998, and federal data shows Hartford magnet enrollment at zero from 1999 through 2001. Those flat early bars look like the finding rather than a hole in the data, though that's worth a second opinion.</p>
+      <p><b>What it's counting.</b> Hartford residents, wherever they go to school &mdash; a different group than chart one, and the distinction matters. A Hartford kid bussed out to a suburban district shows up here and not there. A suburban kid attending a Hartford magnet shows up there and not here.</p>
+
+      <p><b>The recent years, 2016-17 to 2024-25.</b> Connecticut's Department of Education runs a data site called EdSight, and one of its tools is a <i>Resident Town</i> export: pick a town, and it tells you how many kids who live there are enrolled in each type of school, anywhere in the state. Set the town to Hartford and you get six categories &mdash; traditional public, Sheff magnet, Open Choice, charter, technical high school, and a catch-all "other." Those six get folded into the three shown here. Nothing is adjusted; these are the state's own numbers.</p>
+
+      <p><b>Why it stops there.</b> That export only works because Connecticut can follow individual students. It couldn't until the mid-2000s, when a system called PSIS came in. Before that there was no way to ask "where do Hartford's kids go to school," so nobody has the answer. That's a gap in the state's records, not in the research.</p>
+
+      <p><b>Rebuilding traditional enrollment before 2016.</b> Here's the useful trick. That Urban Institute file has a magnet yes/no flag on every school. Add up just the <i>non-magnet</i> Hartford schools and you get something very close to "Hartford kids in neighborhood schools" &mdash; because neighborhood schools, unlike magnets, essentially only serve local children. Across the six years where both this and the state's resident count exist, the two agree within one to five percent. A single correction factor of 1.0155 lines them up.</p>
+
+      <p><b>Rebuilding vo-tech.</b> Connecticut's technical high schools are their own statewide district, so they show up separately in the federal data. A. I. Prince Technical High School sits in Hartford and has continuous federal records back to 1986-87. Scaling its enrollment by 0.836 reproduces the state's resident vo-tech count in the overlapping years. That one number quietly handles two errors at once: Prince students who don't live in Hartford, and Hartford kids attending technical schools elsewhere.</p>
+
+      <p><b>Rebuilding magnets and choice, 2002-03 to 2015-16.</b> This part comes out of a lawsuit. <i>Sheff v. O'Neill</i> was decided in 1996, and ever since, the state has had to report to the court each year what share of Hartford's minority students are in "reduced-isolation settings" &mdash; meaning magnets and choice programs. Those percentages are scattered across court filings, the plaintiffs' ten-year retrospective, and a 2016 Century Foundation profile of Hartford, rather than sitting in one tidy table.</p>
+      <p>Six years have solid figures: about 10% in 2002-03, 12% in 2005-06, 9% in 2006-07, 37% in 2012-13, 44.5% in 2014-15, and 45.5% in 2015-16. Straight lines connect them. The 2014-15 figure is the firmest of the lot, because it's stated as a count rather than a percentage &mdash; 9,558 of 21,458 Hartford minority students.</p>
+      <p>Is a court-reported percentage a fair stand-in for the category shown here? Reasonably. It reads 45.5% for 2015-16, against a measured 49.6% for 2016-17. Different populations, adjacent years, about four points apart &mdash; so it tracks the same movement while running slightly low. Every figure, its source and a link sits in <a href="research/sheff_data_tracker.csv">the data tracker</a>.</p>
+
+      <p><b>Where the totals come from.</b> With traditional enrollment and vo-tech pulled from federal data, and the court's percentage for magnets and choice, the total falls out arithmetically &mdash; no separate estimate needed. An earlier version scaled whole-district enrollment instead and got it badly wrong: the ratio between resident and district enrollment drifts from 1.17 to 1.35 across the measured years, because district enrollment is falling faster. That drift <i>is</i> the phenomenon, so projecting it backwards inflated the early 2000s by roughly a fifth.</p>
+
+      <p><b>Before 2002.</b> Barely anything to rebuild. Charters opened in 1997, Open Choice in 1998, and the federal magnet flag reads zero for Hartford in 1999, 2000 and 2001, and 116 students in 1998. So those years come straight from federal district enrollment. The flat early bars look like the finding rather than a hole, though that's worth a second opinion.</p>
+
+      <p><b>Caveats.</b> Where the <i>Sheff</i> record contradicts itself &mdash; and it does, on 2002-03 and 2006-07 &mdash; the lower number wins, which undersells the shift rather than overselling it. The small dip at 2006-07 is one of those. In 2013-14 the court narrowed what counted as "minority," so the rate either side of that line isn't quite measuring the same thing. And the hatched bars bounce around more than the solid ones, because they mix a federal headcount with an estimated rate; treat that wobble as noise rather than real swings in the number of Hartford children.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:10px;">From spreadsheet to website</div>
+    <div class="stat-pair-text" style="flex:1 1 100%;">
+      <p><b>Two scripts, one command each.</b> Everything above happens in two Python programs. <code>build_hartford_panel.py</code> handles chart one; <code>build_choice_panel.py</code> handles chart two. Run either and it reads the raw downloads, does the work, prints a summary of what it did &mdash; including every gap it filled &mdash; and writes out spreadsheets anyone can open.</p>
+      <p><b>Nothing is typed in by hand.</b> That's the point of doing it this way. Change a threshold from 150 to 200, rerun, and every number on this page updates. There's no manual step where a figure could get fat-fingered, and no version of the data that exists only in someone's spreadsheet.</p>
+      <p><b>How the numbers reach the page.</b> Each script finishes by rewriting a block of data sitting inside this page's source. The numbers are baked into the page rather than fetched from a file, which is a bit old-fashioned but means the page works when opened straight off a laptop &mdash; browsers block pages from loading local files, for security reasons that make sense in general and are just inconvenient here.</p>
+      <p><b>What's published.</b> The whole thing lives in a public repository: both scripts, the finished spreadsheets, the research notes, and the raw downloads themselves &mdash; roughly 100 megabytes of original federal files, so nobody has to take it on faith that they say what's claimed here. GitHub serves the page directly from that repository, which is why the code and the site can't drift apart. What you're reading was built by the code in that folder.</p>
     </div>
   </div>
 
