@@ -143,9 +143,9 @@
   <h1 id="headline">Loading…</h1>
   <p class="dek" id="dek"></p>
 
-  <p class="dek">What follows is a careful attempt to pull insights from public numbers regarding student enrollment in Hartford, put together without accompanying claim of any expertise in education policy or the history of greater Hartford. Every source is named, every step is written down, and the repository is linked below, so anyone who knows the subject better can check the work and suggest improvements.</p>
+  <p class="dek">This is a careful dig through public numbers on Hartford school enrollment. No claim of expertise here in education policy, or in the history of greater Hartford. Every source is named, every step is written down, and the code is linked below &mdash; so anyone who knows this better can check the work and share a note &mdash; contact info below.</p>
 
-  <p class="dek"><strong>Why it matters:</strong> this rests on figures assembled for this page, and better numbers would sharpen it. But the pattern is hard to miss. Fewer students per school building usually means fewer teachers, thinner course offerings, and harder choices about how to pay for them to stay open &mdash; even in years when citywide enrollment holds roughly steady.</p>
+  <p class="dek"><strong>Why it matters:</strong> these are figures put together for this page, and better ones would sharpen the picture. But the pattern's hard to miss. Fewer kids per building usually means fewer teachers, thinner course offerings, and harder choices about how to pay to keep the lights on &mdash; even in years when citywide enrollment barely moves.</p>
 
   <div class="chips">
     <div class="chip active baseline" data-preset="full">Full history</div>
@@ -167,7 +167,7 @@
   <div class="card">
     <div class="card-head">
       <div>
-        <div class="card-title">Schools by size &amp; average enrollment trend</div>
+        <div class="card-title">School sizes, and the average, over 39 years</div>
         <div class="card-sub" id="chartSub"></div>
       </div>
     </div>
@@ -175,67 +175,67 @@
       <canvas id="mainChart"></canvas>
     </div>
     <div class="legend-row">
-      <span><span class="legend-swatch" style="background:#2D2D2D;"></span>&le; threshold</span>
-      <span><span class="legend-swatch" style="background:#D3D3D3;"></span>&gt; threshold</span>
-      <span><span class="legend-line"></span>3-yr rolling avg enrollment</span>
+      <span><span class="legend-swatch" style="background:#9AA1A9;"></span>smaller schools</span>
+      <span><span class="legend-swatch" style="background:#DEE2E5;"></span>larger schools</span>
+      <span><span class="legend-line"></span>average enrollment, 3-year rolling</span>
     </div>
   </div>
 
 
-  <div class="source">Source: National Center for Education Statistics Common Core of Data, via the Urban Institute Education Data Portal, cross-checked against Connecticut State Department of Education EdSight data. Covers 24 Hartford public schools open for at least 30 straight years of the last 39, never dropping below 150 students.</div>
+  <div class="source">Numbers from the National Center for Education Statistics Common Core of Data, pulled via the Urban Institute Education Data Portal and checked against Connecticut State Department of Education EdSight. Covers the 24 Hartford schools that stayed open at least 30 straight years out of the last 39 and never dropped below 150 kids.</div>
 
   <div class="section-divider"></div>
 
   <div class="eyebrow">A follow-up question</div>
   <h2 class="section-h2">Where did the students go?</h2>
-  <p class="section-intro">The obvious guess upon seeing the data above is "fewer kids in the city means fewer kids in schools." Hartford's child population did fall. But for the years where the state counts Hartford students by where they actually enroll, something else is happening alongside it &mdash; and it moves faster than the population does.</p>
+  <p class="section-intro">The obvious guess upon seeing the data above is "fewer kids in the city means fewer kids in schools." Hartford's child population did fall. But for the years where the state counts Hartford students by where they actually enroll, something else appears to be happening alongside it &mdash; and it seems to move faster than the population does.</p>
 
-  <p class="section-intro">Traditional Hartford-run schools once taught the lion's share of the city's children. By 2024-25 they taught fewer than half.</p>
+  <p class="section-intro">Hartford-run neighborhood schools used to teach the lion's share of the city's kids. By 2024-25 they taught fewer than half.</p>
 
   <div class="chips" id="choiceChips">
     <div class="chip active baseline" data-range="available">Available data</div>
     <div class="chip" data-range="full">Full history*</div>
   </div>
-  <p class="chips-note">* Enrollment by school type comes from the Connecticut State Department of Education's EdSight Resident Town export and, for earlier years, the <em>Sheff v. O'Neill</em> compliance record. It runs from 2002 forward. Years before that are reconstructed from federal enrollment counts &mdash; see the methodology section below.</p>
+  <p class="chips-note">* Enrollment by school type runs from 2002 forward, out of the Connecticut State Department of Education's EdSight Resident Town export and, for the earlier stretch, the <em>Sheff v. O'Neill</em> court record. Anything before 2002 is pieced together from federal counts &mdash; more on that in the methodology below.</p>
 
   <div class="card">
     <div class="card-head">
       <div>
         <div class="card-title">Hartford-resident students, by where they attend school</div>
-        <div class="card-sub">1986-87 to 2024-25 — solid bars measured, hatched bars reconstructed</div>
+        <div class="card-sub">1986-87 to 2024-25 — solid bars are counted, hatched bars are pieced together</div>
       </div>
     </div>
     <div class="chart-wrap" style="height:420px;">
       <canvas id="choiceChart"></canvas>
     </div>
     <div class="legend-row" id="choiceLegend"></div>
-    <div class="chart-footnote">Solid bars are state counts. Hatched bars are reconstructed &mdash; Connecticut had no student-level data system until the mid-2000s, so nobody counted this before then. "Magnets &amp; choice programs" bundles interdistrict Sheff magnets, Open Choice placements in suburban districts, state charter schools, and smaller specialized programs. The dashed line at 2013-14 marks where the court changed its definition of "minority," which moved several magnets into compliance without a single child changing schools.</div>
+    <div class="chart-footnote">Solid bars are actual state counts. Hatched bars are pieced together &mdash; Connecticut had no way to track individual students until the mid-2000s, and it appears nobody was counting this. "Magnets &amp; choice programs" lumps together inter-district Sheff magnets, Open Choice seats in suburban districts, state charters, and a handful of smaller programs. The dashed line at 2013-14 is where the court changed what counted as "minority," which seems to have moved several magnets into compliance without any kids switching schools.</div>
   </div>
 
-  <div class="source">Sources: Connecticut State Department of Education, EdSight Resident Town enrollment export, for 2016-17 onward. <em>Sheff v. O'Neill</em> compliance record, via the plaintiffs' ten-year retrospective and the Century Foundation's 2016 Hartford profile, for 2002-03 to 2015-16. National Center for Education Statistics Common Core of Data throughout. Every reconstructed value and its source sits in <a href="research/sheff_data_tracker.csv">the data tracker</a>. This chart counts Hartford <em>residents</em> wherever they attend. The first counts students <em>attending</em> Hartford district schools wherever they live. Those are different populations.</div>
+  <div class="source">2016-17 onward: Connecticut State Department of Education, EdSight Resident Town export. 2002-03 to 2015-16: the <em>Sheff v. O'Neill</em> court record, by way of the plaintiffs' ten-year retrospective and the Century Foundation's 2016 Hartford profile. National Center for Education Statistics Common Core of Data throughout. Every pieced-together value and where it came from sits in <a href="research/sheff_data_tracker.csv">the data tracker</a>. One thing to keep straight: this chart counts Hartford <em>residents</em> wherever they go to school, while the first counts kids <em>attending</em> Hartford schools wherever they live. Not the same group.</div>
 
   <div class="section-divider"></div>
 
   <div class="eyebrow">How this was built</div>
   <h2 class="section-h2" id="methodology">Methodology</h2>
-  <p class="section-intro">Every script, source file and intermediate table lives in <a href="https://github.com/chriseshleman/hartford-enrollment">the project repository</a>. Corrections and pull requests are welcome, particularly on the reconstructed years.</p>
+  <p class="section-intro">Every script, source file and intermediate table sits in <a href="https://github.com/chriseshleman/hartford-enrollment">the project repository</a>. Corrections and pull requests welcome, especially on the pieced-together years.</p>
 
   <div class="card">
     <div class="card-title" style="margin-bottom:10px;">Chart 1 &mdash; average enrollment</div>
     <div class="stat-pair-text" style="flex:1 1 100%;">
-      <p><b>1. What it measures.</b> Students attending Hartford district schools, wherever those students live. It includes suburban children in Hartford's inter-district magnets. A "legacy" school is one that clears the two filters in step 4.</p>
-      <p><b>2. Sources.</b> Two, joined on twelve-digit federal school ID. The National Center for Education Statistics Common Core of Data <i>Public School Universe Survey</i> covers 1986-87 to 1997-98 via twelve annual fixed-width files. The Urban Institute's Education Data Portal covers years 1998 to 2024.</p>
-      <p><b>3. Using the old files.</b> The total-enrollment field moves position between years as the National Center for Education Statistics widened its grade columns &mdash; character 243 in 1986-87, 258 by 1988, 263 from 1991. The offsets were taken from the published record layouts and verified: all continuously-reporting Hartford schools matched data from the agency's own ELSI tool. Occasional single-year data gaps are interpolated using moving averages from surrounding years.</p>
-      <p><b>4. Choosing the schools.</b> Two filters: at least thirty consecutive years of data, and no single year below 150 students. Twenty-four of Hartford's seventy schools qualify. The 150 floor exists to exclude tiny specialty programs, not schools that shrank &mdash; shrinking is the subject of the analysis, so filtering it out would remove the effect being measured.</p>
+      <p><b>1. What it measures.</b> Kids attending Hartford district schools, wherever those kids live. That includes suburban students in Hartford's inter-district magnets. A "legacy" school is just one that clears the two filters in step 4.</p>
+      <p><b>2. Sources.</b> Two of them, joined on the twelve-digit federal school ID. The National Center for Education Statistics Common Core of Data <i>Public School Universe Survey</i> covers 1986-87 to 1997-98, as twelve annual files. The Urban Institute's Education Data Portal picks up 1998 to 2024.</p>
+      <p><b>3. Using the old files.</b> The enrollment field shifts position from year to year, as the federal agency widened its grade columns &mdash; character 243 in 1986-87, 258 by 1988, 263 from 1991. Offsets came from the published record layouts, then got checked: every Hartford school reporting straight through matched the agency's own ELSI tool. The odd one-year gap is filled with an average of the years around it.</p>
+      <p><b>4. Choosing the schools.</b> Two filters: at least thirty straight years of data, and never a year below 150 kids. Twenty-four of Hartford's seventy schools make the cut. That 150 floor is there to keep out tiny specialty programs, not schools that shrank &mdash; shrinking is the whole point, so filtering it out would erase what we're looking at.</p>
     </div>
   </div>
 
   <div class="card">
     <div class="card-title" style="margin-bottom:10px;">Chart 2 &mdash; Hartford-resident students by school type</div>
     <div class="stat-pair-text" style="flex:1 1 100%;">
-      <p><b>1. What it measures.</b> Hartford residents, wherever they attend &mdash; a different population from chart one. A Hartford child bussed to a suburban district appears here and not there; a suburban child in a Hartford magnet appears there and not here.</p>
-      <p><b>2. Sources.</b> 2016-17 onward is read directly from the Connecticut State Department of Education's EdSight Resident Town export. Traditional enrollment before 2016 is taken from federal counts of Hartford's non-magnet district schools. Magnets and choice, 2002-03 to 2015-16, are derived from the <i>Sheff v. O'Neill</i> compliance rate &mdash; the share of Hartford minority students in reduced-isolation settings, which the state reported to the court each year; six anchor years are used, with straight lines between them. Vo-tech numbers are scaled from A. I. Prince Technical High School, in Hartford, which federal data reports continuously from 1986-87.</p>
-      <p><b>3. Caveats.</b> The resident total is not measured before 2016. It follows arithmetically from traditional enrollment, vo-tech, and the court-reported share. Where the <i>Sheff</i> record disagrees with itself, the lower figure is used, which understates the shift rather than overstating it &mdash; the small dip at 2006-07 is one of those. In 2013-14 the court narrowed its definition of "minority," and several magnets became compliant without a child changing schools, so the rate either side of that line measures slightly different things. Hatched bars also vary in height more than solid ones, because they mix a federal headcount with an interpolated rate; treat that wobble as noise. Before 2002 there is little to reconstruct: charters opened in 1997, Open Choice in 1998, and federal data puts Hartford magnet enrollment at zero for 1999 through 2001. Flat early bars are a finding, not a gap.</p>
+      <p><b>1. What it measures.</b> Hartford residents, wherever they go to school &mdash; a different group than chart one. A Hartford kid bussed out to a suburb shows up here and not there. A suburban kid in a Hartford magnet shows up there and not here.</p>
+      <p><b>2. Sources.</b> 2016-17 onward comes straight from the Connecticut State Department of Education's EdSight Resident Town export. Traditional enrollment before 2016 comes from federal counts of Hartford's non-magnet schools. Magnets and choice, 2002-03 to 2015-16, come from the <i>Sheff v. O'Neill</i> compliance rate &mdash; the share of Hartford minority students in reduced-isolation settings, which the state had to report to the court every year. Six anchor years, straight lines between them. Vo-tech is scaled off A. I. Prince Technical High School, here in Hartford, which federal data covers without a break from 1986-87.</p>
+      <p><b>3. Caveats.</b> No one seems to have counted the resident total before 2016 &mdash; here it falls out of the math once you have traditional enrollment, vo-tech, and the court's share. Where the <i>Sheff</i> record contradicts itself, the lower number wins, which undersells the shift rather than overselling it; the small dip at 2006-07 is one of those. In 2013-14 the court narrowed what counted as "minority," so the rate either side of that line isn't quite measuring the same thing. Hatched bars also bounce around more than solid ones, because they mix a federal headcount with an estimated rate &mdash; treat the wobble as noise. Before 2002 there's barely anything to piece together: charters opened in 1997, Open Choice in 1998, and federal data shows Hartford magnet enrollment at zero from 1999 through 2001. Those flat early bars look like the finding rather than a hole in the data, though that's worth a second opinion.</p>
     </div>
   </div>
 
@@ -243,17 +243,17 @@
 
   <div class="eyebrow">Found a problem?</div>
   <h2 class="section-h2" id="corrections">Corrections</h2>
-  <p class="section-intro">Errors here are likely, and the reconstructed years from 2002 to 2015 are the likeliest place for them. If something looks wrong &mdash; or if you have better figures, particularly from the <em>Sheff</em> compliance filings &mdash; say so.</p>
+  <p class="section-intro">There are almost certainly mistakes in here, and the pieced-together years from 2002 to 2015 are where they're most likely hiding. If something looks off &mdash; or if you've got better numbers, especially out of the <em>Sheff</em> filings &mdash; say so.</p>
 
   <div class="card">
     <div class="stat-pair-text" style="flex:1 1 100%;">
       <p><b>Email:</b> <a href="mailto:feedback@hartfordschoolenrollment.us">feedback@hartfordschoolenrollment.us</a></p>
       <p><b>Or open an issue:</b> <a href="https://github.com/chriseshleman/hartford-enrollment/issues">github.com/chriseshleman/hartford-enrollment/issues</a></p>
-      <p style="margin-top:14px;">Every correction that changes a number on this page gets logged in <a href="https://github.com/chriseshleman/hartford-enrollment/blob/main/CORRECTIONS.md">CORRECTIONS.md</a> &mdash; what changed, when, and who flagged it. Nothing gets quietly edited.</p>
+      <p style="margin-top:14px;">Anything that changes a number on this page gets written down in <a href="https://github.com/chriseshleman/hartford-enrollment/blob/main/CORRECTIONS.md">CORRECTIONS.md</a> &mdash; what changed, when, and who caught it. Nothing gets quietly edited.</p>
     </div>
   </div>
 
-  <div class="source">Last rebuilt from source data on <span id="buildDate">23 August 2026</span>. This site is independent, non-commercial, and not affiliated with Hartford Public Schools or the Connecticut State Department of Education.</div>
+  <div class="source">Last rebuilt from source data on <span id="buildDate">23 August 2026</span>. This work is a solo, standalone effort. It's not affiliated with any institutions &mdash; no school district, no government agency, no nonprofit. Nada, zilch, zero.</div>
 
 </div>
 
@@ -322,7 +322,7 @@ function updateHeadline(yearlyAvg, activeYears) {
   const round50 = v => Math.round(v / 50) * 50;
   h1.innerHTML = `The average Hartford legacy school has ${direction} <span class="num">${pctDisplay}%</span> of its students.`;
   const endLabel = '20' + activeYears[lastIdx].slice(-2);
-  dek.innerHTML = `In ${activeYears[firstIdx]}, a typical legacy<a href="#methodology" style="text-decoration:none;">*</a> school in Hartford had around <strong>${round50(startVal).toLocaleString()} kids</strong>. By ${endLabel} that number was closer to <strong>${round50(endVal).toLocaleString()}</strong>. The line below tracks average enrollment per school. The bars behind it show how many of these schools sit above and below a size benchmark, set to ${threshold} students by default.`;
+  dek.innerHTML = `In ${activeYears[firstIdx]}, a typical legacy<a href="#methodology" style="text-decoration:none;">*</a> school in Hartford had around <strong>${round50(startVal).toLocaleString()} kids</strong>. By ${endLabel} it was closer to <strong>${round50(endVal).toLocaleString()}</strong>. The line below tracks the average per school. The bars behind it count how many of those schools sit above and below ${threshold} students.`;
 }
 
 const lineOnTopPlugin = {
@@ -398,9 +398,9 @@ let chart = new Chart(ctx, {
   data: {
     labels: [],
     datasets: [
-      { type: 'bar', label: '≤ threshold', data: [], backgroundColor: '#2D2D2D', stack: 'schools', yAxisID: 'y', order: 1 },
-      { type: 'bar', label: '> threshold', data: [], backgroundColor: '#D3D3D3', stack: 'schools', yAxisID: 'y', order: 1 },
-      { type: 'line', label: '3-yr rolling avg enrollment', data: [], borderColor: '#16233B', backgroundColor: '#16233B', borderWidth: 3, pointRadius: 0, spanGaps: true, yAxisID: 'y1', order: 2 }
+      { type: 'bar', label: 'smaller schools', data: [], backgroundColor: '#9AA1A9', stack: 'schools', yAxisID: 'y', order: 1 },
+      { type: 'bar', label: 'larger schools', data: [], backgroundColor: '#DEE2E5', stack: 'schools', yAxisID: 'y', order: 1 },
+      { type: 'line', label: 'average enrollment', data: [], borderColor: '#16233B', backgroundColor: '#16233B', borderWidth: 3, pointRadius: 0, spanGaps: true, yAxisID: 'y1', order: 2 }
     ]
   },
   options: {
@@ -449,7 +449,7 @@ function render() {
   chart.update();
 
   document.getElementById('chartSub').textContent =
-    `${activeYears[0]} to ${activeYears[activeYears.length-1]} • ${visibleSchools.size} of ${SCHOOLS.length} schools • benchmark ${threshold} students`;
+    `${activeYears[0]} to ${activeYears[activeYears.length-1]} • ${visibleSchools.size} of ${SCHOOLS.length} schools • split at ${threshold} students`;
   document.getElementById('schoolCount').textContent =
     `${visibleSchools.size} of ${SCHOOLS.length}`;
 
@@ -536,19 +536,28 @@ const choiceMarkers = {
       const i = CHOICE_RAW.years.indexOf(year) - from;
       if (i < 0 || i >= c.data.labels.length) return;
       const x = c.scales.x.getPixelForValue(i) - c.scales.x.width / c.data.labels.length / 2;
+      const y = a.top + dy;
       g.save();
       g.setLineDash(dash); g.strokeStyle = '#16233B'; g.lineWidth = 1.5;
       g.beginPath(); g.moveTo(x, a.top); g.lineTo(x, a.bottom); g.stroke();
       g.setLineDash([]);
+
+      // little elbow from the rule out to its own label, so the two labels
+      // never read as belonging to the wrong line
+      g.strokeStyle = '#16233B'; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(x, y - 3); g.lineTo(x + 6, y - 3); g.stroke();
+      g.fillStyle = '#16233B';
+      g.beginPath(); g.arc(x, y - 3, 2.5, 0, Math.PI * 2); g.fill();
+
       g.font = '600 10.5px Inter, sans-serif';
-      g.fillStyle = '#16233B'; g.strokeStyle = '#fff'; g.lineWidth = 3;
+      g.strokeStyle = '#fff'; g.lineWidth = 3.5; g.lineJoin = 'round';
       g.textAlign = 'left';
-      g.strokeText(label, x + 5, a.top + dy);
-      g.fillText(label, x + 5, a.top + dy);
+      g.strokeText(label, x + 10, y);
+      g.fillText(label, x + 10, y);
       g.restore();
     };
-    rule('Sheff redefined "minority"', CHOICE_RAW.definitionBreak, [4, 3], 12);
-    rule('State counts begin', CHOICE_RAW.firstMeasured, [2, 2], 30);
+    rule('Sheff redefined "minority"', CHOICE_RAW.definitionBreak, [4, 3], 14);
+    rule('State counts begin', CHOICE_RAW.firstMeasured, [2, 2], 36);
   }
 };
 
@@ -585,8 +594,8 @@ const choiceChart = new Chart(choiceCtx, {
       tooltip: { callbacks: {
         label: (item) => item.dataset.label + ': ' + item.parsed.y.toLocaleString() + ' students',
         afterBody: (items) => items.length
-          ? ({ 'measured': 'State count',
-               'reconstructed': 'Reconstructed from the court record',
+          ? ({ 'measured': 'Counted by the state',
+               'reconstructed': 'Pieced together from the court record',
                'pre-Sheff': 'Before the choice programs existed' }
              [CHOICE_RAW.basis[items[0].dataIndex + (choiceChart.$visibleFrom || 0)]] || '')
           : ''
@@ -594,7 +603,8 @@ const choiceChart = new Chart(choiceCtx, {
     },
     scales: {
       x: { stacked: true, ticks: { maxRotation: 60, minRotation: 60, autoSkip: true, maxTicksLimit: 24 } },
-      y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Hartford-resident students' } }
+      y: { stacked: true, beginAtZero: true, grace: '18%',
+           title: { display: true, text: 'Hartford-resident students' } }
     }
   }
 });
@@ -608,7 +618,7 @@ Object.keys(CHOICE_DATA_FULL).forEach(label => {
 const hatchNote = document.createElement('span');
 hatchNote.innerHTML = '<span class="legend-swatch" style="background:#808080;' +
   'background-image:repeating-linear-gradient(45deg,transparent,transparent 2px,#fff 2px,#fff 3px);' +
-  '"></span>hatched = reconstructed';
+  '"></span>hatched = pieced together';
 choiceLegendEl.appendChild(hatchNote);
 
 function renderChoice() {
