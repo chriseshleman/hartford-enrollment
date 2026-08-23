@@ -1,0 +1,13 @@
+years,variable,label,description,source
+1986-2024,"ncessch","National Center for Education Statistics (NCES) identification number","None","Common Core of Data"
+1986-2024,"school_name","School name","None","Common Core of Data"
+1986-2024,"state_location","State of location","None","Common Core of Data"
+1986-2024,"lea_name","Local education agency name","Name of the local education agency (school district)","Common Core of Data"
+1986-2024,"school_level","School level","None","Common Core of Data"
+1986-2024,"school_type","School type","None","Common Core of Data"
+1986-2024,"charter","Charter school","None","Common Core of Data"
+1986-2024,"school_level","School level","None","Common Core of Data"
+1986-2024,"school_type","School type","None","Common Core of Data"
+1986-2024,"enrollment","Student enrollment","None","Common Core of Data"
+1986-2024,"charter","Charter school","None","Common Core of Data"
+1986-2024,"magnet","Magnet school","None","Common Core of Data"

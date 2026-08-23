@@ -1,0 +1,71 @@
+ncessch,school_name,first_year,last_year,n_years_reported,n_years_interpolated,longest_consecutive_run,min_enrollment,max_enrollment,years_below_floor,passes_run,passes_floor,INCLUDE
+090192000355,Batchelder School,1986,2017,32,0,32,397,589,0,True,True,True
+090192001192,Betances Learning Lab Magnet School,1986,2024,39,0,39,278,583,0,True,True,True
+090192000356,Bulkeley High School Lower School,1986,2015,30,0,30,412,1861,0,True,True,True
+090192000357,Burns Latino Studies Academy,1986,2024,39,0,39,224,1089,0,True,True,True
+090192000358,Burr Middle School,1986,2024,39,0,39,259,810,0,True,True,True
+090192000359,Clark School,1986,2015,30,0,30,246,768,0,True,True,True
+090192000360,Dwight-Bellizzi Dual Language Academy,1986,2024,39,0,39,328,662,0,True,True,True
+090192000366,Environmental Sciences Magnet At Hooker School,1986,2024,39,0,39,213,1030,0,True,True,True
+090192000368,Kennelly School,1986,2024,39,0,39,534,996,0,True,True,True
+090192000370,Kinsella Magnet School Of Performing Arts: Pk-8 Campus,1986,2024,39,0,39,384,913,0,True,True,True
+090192000364,M. D. Fox School,1986,2024,39,1,39,493,1370,0,True,True,True
+090192000369,M. L. King Jr. Middle School,1986,2024,39,0,39,169,1159,0,True,True,True
+090192000371,Mcdonough Middle School,1986,2024,39,2,39,237,869,0,True,True,True
+090192000381,Milner Middle School,1986,2024,39,0,39,261,751,0,True,True,True
+090192000372,Naylor/Ccsu Leadership Academy,1986,2024,39,0,39,357,722,0,True,True,True
+090192000373,Parkville Community School,1986,2024,39,0,39,351,786,0,True,True,True
+090192000376,Rawson School,1986,2024,39,0,39,198,755,0,True,True,True
+090192000026,Sanchez School,1992,2024,33,0,33,311,580,0,True,True,True
+090192000377,Sand School,1986,2024,39,0,39,266,826,0,True,True,True
+090192000378,Simpson-Waverly School,1986,2017,32,0,32,251,630,0,True,True,True
+090192000362,Stem Magnet At Annie Fisher School,1986,2024,39,0,39,253,784,0,True,True,True
+090192000383,Webster Micro Society Magnet School,1986,2024,39,0,39,390,678,0,True,True,True
+090192000384,West Middle School,1986,2024,39,0,39,262,934,0,True,True,True
+090192000385,Wish Museum School,1986,2024,39,0,39,285,698,0,True,True,True
+090192001193,Alternative Education Learning,1986,1997,12,1,12,16,807,3,False,False,False
+090192000353,Barbour School,1986,1998,13,0,13,205,317,0,False,True,False
+090192000354,Barnard-Brown School,1986,2007,22,0,22,333,693,0,False,True,False
+090192001616,Betances Stem Magnet School,2012,2024,13,0,13,87,375,1,False,False,False
+090192001534,Breakthrough Magnet School North,2008,2024,17,0,17,102,344,3,False,False,False
+090192001369,Breakthrough Magnet School South,2002,2024,23,0,23,192,361,0,False,True,False
+090192001572,Bulkeley High School,2009,2024,16,0,16,373,688,0,False,True,False
+090192001650,Capital Community College Magnet Academy,2014,2018,5,0,5,11,57,5,False,False,False
+090192001435,Capital Preparatory Magnet School,2005,2024,20,0,20,142,701,1,False,False,False
+090192001478,Classical Magnet School,2003,2024,22,0,22,373,715,0,False,True,False
+090192001522,Culinary Arts Academy At Weaver High School,2008,2018,11,0,11,24,297,2,False,False,False
+090192001879,Ddp - Simpson-Waverly School,2015,2016,2,0,2,4,10,2,False,False,False
+090192000006,Dr. Joseph Bellizzi Middle School,1991,2012,22,0,22,57,744,2,False,False,False
+090192000636,Expeditionary Learning Academy At Moylan School,1997,2024,28,0,28,342,848,0,False,True,False
+090192000363,Fox Middle School,1986,2008,23,0,23,163,1132,0,False,True,False
+090192001535,Global Communications Academy,2008,2024,17,0,17,208,661,0,False,True,False
+090192001403,Great Path Academy At Ct State Manchester,2012,2024,13,0,13,249,336,0,False,True,False
+090192001295,Hartford Magnet Trinity College Academy,2000,2024,25,0,25,183,1069,0,False,True,False
+090192001643,Hartford Prekindergarten Magnet School: North Campus,2013,2024,12,0,12,80,189,6,False,False,False
+090192011231,Hartford Prekindergarten Magnet School: South Campus,2022,2024,3,0,3,112,117,3,False,False,False
+090192000365,Hartford Public High School,1986,2008,23,0,23,1068,2163,0,False,True,False
+090192001925,Hartford Public High School,2019,2024,6,0,6,698,976,0,False,True,False
+090192000222,Hartford Transitional Learn,1994,2004,11,7,11,153,211,0,False,True,False
+090192001380,Hartford Transitional Learn,2004,2004,1,0,1,60,60,1,False,False,False
+090192001552,High School Inc.,2009,2018,10,0,10,190,377,0,False,True,False
+090192000516,Homebound,1996,1996,1,0,1,10,10,1,False,False,False
+090192001574,Hphs Engineering And Green Technology Academy,2009,2018,10,0,10,304,438,0,False,True,False
+090192001575,Hphs Freshmen Academy,2009,2011,3,0,3,221,373,0,False,True,False
+090192001576,Hphs Law And Government Academy,2009,2018,10,0,10,314,533,0,False,True,False
+090192001559,Hphs Nursing And Health Sciences Academy,2009,2018,10,0,10,344,489,0,False,True,False
+090192001562,Journalism And Media Academy,2009,2018,10,0,10,166,317,0,False,True,False
+090192011232,Kinsella Magnet School Of Performing Arts: High School Campu,2022,2024,3,0,3,110,140,3,False,False,False
+090192000997,Little Owls Learning Center,1999,2008,10,2,10,6,23,10,False,False,False
+090192001641,Montessori Magnet At Batchelder School,2013,2024,12,0,12,158,372,0,False,True,False
+090192001531,Montessori Magnet At Fisher School,2008,2024,17,0,17,101,360,2,False,False,False
+090192000210,Montessori Magnet School,1994,1998,5,1,5,74,139,5,False,False,False
+090192001553,Opportunity High School,2009,2014,6,0,6,90,127,6,False,False,False
+090192001479,Pathways Academy Of Technology And Design,2003,2024,22,0,22,85,432,1,False,False,False
+090192000375,Quirk Middle School,1986,2009,24,0,24,244,1417,0,False,True,False
+090192001582,Renzulli Gifted And Talented Academy,2010,2024,15,0,15,57,134,15,False,False,False
+090192001589,Sarah J Rawson Middle Grades Academy,2010,2011,2,0,2,188,202,0,False,True,False
+090192001370,Sport And Medical Sciences Academy,2002,2024,23,0,23,316,709,0,False,True,False
+090192000380,Twain School,1986,2007,22,0,22,282,478,0,False,True,False
+090192001381,University High School Of Science And Engineering,2004,2024,21,0,21,103,439,1,False,False,False
+090192000382,Weaver High School,1986,2010,25,0,25,157,1712,0,False,True,False
+090192001939,Weaver High School,2020,2024,5,0,5,544,721,0,False,True,False

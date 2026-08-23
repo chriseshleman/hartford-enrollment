@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hartford School Enrollment Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=Roboto+Mono:wght@500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+  :root {
+    --ink:#16233B;
+    --paper:#EEF1F0;
+    --paper-2:#E2E7E4;
+    --card:#FFFFFF;
+    --slate:#5B6478;
+    --amber:#E8A33D;
+    --rust:#B5482F;
+    --orange:#DD8452;
+    --green:#55A868;
+    --hairline:#D6DAD6;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  .masthead {
+    display: flex; align-items: baseline; justify-content: space-between;
+    border-bottom: 2px solid var(--ink); padding-bottom: 14px; margin-bottom: 32px;
+  }
+  .masthead .brand { font-family: 'Roboto Mono', monospace; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--slate); }
+  .masthead .brand b { color: var(--ink); }
+  .masthead .links { font-size: 12.5px; }
+  .masthead .links a { color: var(--slate); text-decoration: underline; margin-left: 14px; }
+
+  .eyebrow { font-family: 'Roboto Mono', monospace; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--rust); margin-bottom: 12px; font-weight: 500; }
+  h1 {
+    font-family: 'Fraunces', serif; font-weight: 600;
+    font-size: clamp(28px, 4vw, 44px); line-height: 1.08; letter-spacing: -.01em;
+    margin: 0 0 16px;
+  }
+  h1 .num { color: var(--rust); font-variant-numeric: tabular-nums; }
+  .dek { font-size: 17px; line-height: 1.55; color: var(--slate); max-width: 68ch; margin: 0 0 28px; }
+  .dek strong { color: var(--ink); font-weight: 600; }
+
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px; }
+  .chip {
+    font-family: 'Roboto Mono', monospace; font-size: 12.5px;
+    border: 1px solid var(--hairline); background: var(--card);
+    padding: 8px 14px; border-radius: 999px; color: var(--ink); cursor: pointer;
+  }
+  .chip.active { border-color: var(--ink); background: var(--ink); color: #fff; }
+  .chip.baseline { font-weight: 600; background: var(--paper-2); }
+  .chip.baseline.active { background: var(--ink); }
+  .chips-note { font-size: 11.5px; color: var(--slate); margin: -14px 0 20px; line-height: 1.5; max-width: 74ch; }
+
+  .card {
+    background: var(--card); border: 1px solid var(--hairline); border-radius: 14px;
+    padding: 26px 26px 18px; margin-bottom: 22px;
+  }
+  .card-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 4px; flex-wrap: wrap; }
+  .card-title { font-family: 'Fraunces', serif; font-weight: 600; font-size: 19px; }
+  .card-sub { font-size: 13px; color: var(--slate); margin-top: 3px; }
+
+  .chart-wrap { position: relative; height: 440px; margin-top: 10px; }
+  .legend-row { display: flex; gap: 18px; margin-top: 10px; font-size: 12px; color: var(--slate); }
+  .legend-swatch { display: inline-block; width: 11px; height: 11px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+  .legend-line { display: inline-block; width: 16px; height: 3px; background: var(--ink); margin-right: 5px; vertical-align: 3px; }
+
+  .chip-sep { width: 1px; background: var(--hairline); margin: 2px 4px; }
+  .chip-schools { font-variant-numeric: tabular-nums; }
+  .chip-schools.open { border-color: var(--ink); }
+
+  .school-panel {
+    display: none; background: var(--card); border: 1px solid var(--hairline);
+    border-radius: 12px; padding: 14px 16px; margin: -12px 0 24px;
+  }
+  .school-panel.open { display: block; }
+  #schoolList {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 2px 18px; max-height: 260px; overflow-y: auto;
+  }
+  .school-item { display: flex; align-items: center; gap: 7px; font-size: 12.5px; padding: 3px 0; }
+  .school-item input, .school-item label { cursor: pointer; }
+  .school-actions { display: flex; gap: 8px; margin-bottom: 10px; }
+  .school-actions button {
+    font-family: 'Roboto Mono', monospace; font-size: 11px; padding: 4px 10px;
+    border: 1px solid var(--hairline); background: var(--paper-2);
+    border-radius: 6px; cursor: pointer; color: var(--ink);
+  }
+
+  .note {
+    background: var(--paper-2); border-radius: 12px; padding: 18px 20px;
+    font-size: 14px; color: var(--slate); margin-bottom: 24px; line-height: 1.55;
+  }
+  .note b { color: var(--ink); }
+
+  .source { font-size: 12px; color: var(--slate); border-top: 1px solid var(--hairline); padding-top: 14px; }
+  .source a { color: var(--slate); }
+
+  .section-divider { border-top: 1px solid var(--hairline); margin: 40px 0 32px; }
+  .section-h2 {
+    font-family: 'Fraunces', serif; font-weight: 600;
+    font-size: clamp(22px, 3vw, 30px); line-height: 1.15; letter-spacing: -.01em;
+    margin: 0 0 12px;
+  }
+  .section-intro { font-size: 15.5px; line-height: 1.6; color: var(--slate); max-width: 68ch; margin: 0 0 22px; }
+
+  .chart-footnote { font-size: 11.5px; color: var(--slate); line-height: 1.5; margin-top: 10px; }
+
+  .stat-pair-body { display: flex; gap: 28px; flex-wrap: wrap; align-items: center; margin-top: 6px; }
+  .stat-pair-chart { flex: 0 0 280px; max-width: 100%; }
+  .stat-pair-text { flex: 1 1 320px; font-size: 14.5px; line-height: 1.6; color: var(--slate); }
+  .stat-pair-text p { margin: 0 0 12px; }
+  .stat-pair-text p:last-child { margin-bottom: 0; }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-thumb { background: #ccc; border-radius: 4px; }
+
+  @media (max-width: 560px) {
+    .card { padding: 18px 16px 14px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="brand"><b>Hartford Public Schools</b> · Enrollment Explorer</div>
+    <div class="links">
+      <a href="data/hartford_school_enrollment_by_school_by_year.csv">Full data (CSV)</a>
+      <a href="data/ccd_vs_edsight_comparison.csv">State comparison (CSV)</a>
+    </div>
+  </div>
+
+  <div class="eyebrow">What's changed since the 1980s</div>
+  <h1 id="headline">Loading…</h1>
+  <p class="dek" id="dek"></p>
+
+  <p class="dek">What follows is a careful attempt to pull insights from public numbers regarding student enrollment in Hartford, put together without accompanying claim of any expertise in education policy or the history of greater Hartford. Every source is named, every step is written down, and the repository is linked below, so anyone who knows the subject better can check the work and suggest improvements.</p>
+
+  <p class="dek"><strong>Why it matters:</strong> this rests on figures assembled for this page, and better numbers would sharpen it. But the pattern is hard to miss. Fewer students per school building usually means fewer teachers, thinner course offerings, and harder choices about how to pay for them to stay open &mdash; even in years when citywide enrollment holds roughly steady.</p>
+
+  <div class="chips">
+    <div class="chip active baseline" data-preset="full">Full history</div>
+    <div class="chip" data-preset="last10">Last 10 years</div>
+    <div class="chip" data-preset="last20">Last 20 years</div>
+    <div class="chip" data-preset="since2008">Since 2008-09</div>
+    <div class="chip-sep"></div>
+    <div class="chip chip-schools" id="toggleSchoolList">Schools: <span id="schoolCount"></span> ▾</div>
+  </div>
+
+  <div class="school-panel" id="schoolListWrap">
+    <div class="school-actions">
+      <button id="selectAll">All</button>
+      <button id="selectNone">None</button>
+    </div>
+    <div id="schoolList"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Schools by size &amp; average enrollment trend</div>
+        <div class="card-sub" id="chartSub"></div>
+      </div>
+    </div>
+    <div class="chart-wrap">
+      <canvas id="mainChart"></canvas>
+    </div>
+    <div class="legend-row">
+      <span><span class="legend-swatch" style="background:#2D2D2D;"></span>&le; threshold</span>
+      <span><span class="legend-swatch" style="background:#D3D3D3;"></span>&gt; threshold</span>
+      <span><span class="legend-line"></span>3-yr rolling avg enrollment</span>
+    </div>
+  </div>
+
+
+  <div class="source">Source: National Center for Education Statistics Common Core of Data, via the Urban Institute Education Data Portal, cross-checked against Connecticut State Department of Education EdSight data. Covers 24 Hartford public schools open for at least 30 straight years of the last 39, never dropping below 150 students.</div>
+
+  <div class="section-divider"></div>
+
+  <div class="eyebrow">A follow-up question</div>
+  <h2 class="section-h2">Where did the students go?</h2>
+  <p class="section-intro">The obvious guess upon seeing the data above is "fewer kids in the city means fewer kids in schools." Hartford's child population did fall. But for the years where the state counts Hartford students by where they actually enroll, something else is happening alongside it &mdash; and it moves faster than the population does.</p>
+
+  <p class="section-intro">Traditional Hartford-run schools once taught the lion's share of the city's children. By 2024-25 they taught fewer than half.</p>
+
+  <div class="chips" id="choiceChips">
+    <div class="chip active baseline" data-range="available">Available data</div>
+    <div class="chip" data-range="full">Full history*</div>
+  </div>
+  <p class="chips-note">* Enrollment by school type comes from the Connecticut State Department of Education's EdSight Resident Town export and, for earlier years, the <em>Sheff v. O'Neill</em> compliance record. It runs from 2002 forward. Years before that are reconstructed from federal enrollment counts &mdash; see the methodology section below.</p>
+
+  <div class="card">
+    <div class="card-head">
+      <div>
+        <div class="card-title">Hartford-resident students, by where they attend school</div>
+        <div class="card-sub">1986-87 to 2024-25 — solid bars measured, hatched bars reconstructed</div>
+      </div>
+    </div>
+    <div class="chart-wrap" style="height:420px;">
+      <canvas id="choiceChart"></canvas>
+    </div>
+    <div class="legend-row" id="choiceLegend"></div>
+    <div class="chart-footnote">Solid bars are state counts. Hatched bars are reconstructed &mdash; Connecticut had no student-level data system until the mid-2000s, so nobody counted this before then. "Magnets &amp; choice programs" bundles interdistrict Sheff magnets, Open Choice placements in suburban districts, state charter schools, and smaller specialized programs. The dashed line at 2013-14 marks where the court changed its definition of "minority," which moved several magnets into compliance without a single child changing schools.</div>
+  </div>
+
+  <div class="source">Sources: Connecticut State Department of Education, EdSight Resident Town enrollment export, for 2016-17 onward. <em>Sheff v. O'Neill</em> compliance record, via the plaintiffs' ten-year retrospective and the Century Foundation's 2016 Hartford profile, for 2002-03 to 2015-16. National Center for Education Statistics Common Core of Data throughout. Every reconstructed value and its source sits in <a href="research/sheff_data_tracker.csv">the data tracker</a>. This chart counts Hartford <em>residents</em> wherever they attend. The first counts students <em>attending</em> Hartford district schools wherever they live. Those are different populations.</div>
+
+  <div class="section-divider"></div>
+
+  <div class="eyebrow">How this was built</div>
+  <h2 class="section-h2" id="methodology">Methodology</h2>
+  <p class="section-intro">Every script, source file and intermediate table lives in <a href="https://github.com/chriseshleman/hartford-enrollment">the project repository</a>. Corrections and pull requests are welcome, particularly on the reconstructed years.</p>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:10px;">Chart 1 &mdash; average enrollment</div>
+    <div class="stat-pair-text" style="flex:1 1 100%;">
+      <p><b>1. What it measures.</b> Students attending Hartford district schools, wherever those students live. It includes suburban children in Hartford's inter-district magnets. A "legacy" school is one that clears the two filters in step 4.</p>
+      <p><b>2. Sources.</b> Two, joined on twelve-digit federal school ID. The National Center for Education Statistics Common Core of Data <i>Public School Universe Survey</i> covers 1986-87 to 1997-98 via twelve annual fixed-width files. The Urban Institute's Education Data Portal covers years 1998 to 2024.</p>
+      <p><b>3. Using the old files.</b> The total-enrollment field moves position between years as the National Center for Education Statistics widened its grade columns &mdash; character 243 in 1986-87, 258 by 1988, 263 from 1991. The offsets were taken from the published record layouts and verified: all continuously-reporting Hartford schools matched data from the agency's own ELSI tool. Occasional single-year data gaps are interpolated using moving averages from surrounding years.</p>
+      <p><b>4. Choosing the schools.</b> Two filters: at least thirty consecutive years of data, and no single year below 150 students. Twenty-four of Hartford's seventy schools qualify. The 150 floor exists to exclude tiny specialty programs, not schools that shrank &mdash; shrinking is the subject of the analysis, so filtering it out would remove the effect being measured.</p>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title" style="margin-bottom:10px;">Chart 2 &mdash; Hartford-resident students by school type</div>
+    <div class="stat-pair-text" style="flex:1 1 100%;">
+      <p><b>1. What it measures.</b> Hartford residents, wherever they attend &mdash; a different population from chart one. A Hartford child bussed to a suburban district appears here and not there; a suburban child in a Hartford magnet appears there and not here.</p>
+      <p><b>2. Sources.</b> 2016-17 onward is read directly from the Connecticut State Department of Education's EdSight Resident Town export. Traditional enrollment before 2016 is taken from federal counts of Hartford's non-magnet district schools. Magnets and choice, 2002-03 to 2015-16, are derived from the <i>Sheff v. O'Neill</i> compliance rate &mdash; the share of Hartford minority students in reduced-isolation settings, which the state reported to the court each year; six anchor years are used, with straight lines between them. Vo-tech numbers are scaled from A. I. Prince Technical High School, in Hartford, which federal data reports continuously from 1986-87.</p>
+      <p><b>3. Caveats.</b> The resident total is not measured before 2016. It follows arithmetically from traditional enrollment, vo-tech, and the court-reported share. Where the <i>Sheff</i> record disagrees with itself, the lower figure is used, which understates the shift rather than overstating it &mdash; the small dip at 2006-07 is one of those. In 2013-14 the court narrowed its definition of "minority," and several magnets became compliant without a child changing schools, so the rate either side of that line measures slightly different things. Hatched bars also vary in height more than solid ones, because they mix a federal headcount with an interpolated rate; treat that wobble as noise. Before 2002 there is little to reconstruct: charters opened in 1997, Open Choice in 1998, and federal data puts Hartford magnet enrollment at zero for 1999 through 2001. Flat early bars are a finding, not a gap.</p>
+    </div>
+  </div>
+
+  <div class="section-divider"></div>
+
+  <div class="eyebrow">Found a problem?</div>
+  <h2 class="section-h2" id="corrections">Corrections</h2>
+  <p class="section-intro">Errors here are likely, and the reconstructed years from 2002 to 2015 are the likeliest place for them. If something looks wrong &mdash; or if you have better figures, particularly from the <em>Sheff</em> compliance filings &mdash; say so.</p>
+
+  <div class="card">
+    <div class="stat-pair-text" style="flex:1 1 100%;">
+      <p><b>Email:</b> <a href="mailto:feedback@hartfordschoolenrollment.us">feedback@hartfordschoolenrollment.us</a></p>
+      <p><b>Or open an issue:</b> <a href="https://github.com/chriseshleman/hartford-enrollment/issues">github.com/chriseshleman/hartford-enrollment/issues</a></p>
+      <p style="margin-top:14px;">Every correction that changes a number on this page gets logged in <a href="https://github.com/chriseshleman/hartford-enrollment/blob/main/CORRECTIONS.md">CORRECTIONS.md</a> &mdash; what changed, when, and who flagged it. Nothing gets quietly edited.</p>
+    </div>
+  </div>
+
+  <div class="source">Last rebuilt from source data on <span id="buildDate">23 August 2026</span>. This site is independent, non-commercial, and not affiliated with Hartford Public Schools or the Connecticut State Department of Education.</div>
+
+</div>
+
+<script>
+const RAW = {"years": ["1986-87", "1987-88", "1988-89", "1989-90", "1990-91", "1991-92", "1992-93", "1993-94", "1994-95", "1995-96", "1996-97", "1997-98", "1998-99", "1999-00", "2000-01", "2001-02", "2002-03", "2003-04", "2004-05", "2005-06", "2006-07", "2007-08", "2008-09", "2009-10", "2010-11", "2011-12", "2012-13", "2013-14", "2014-15", "2015-16", "2016-17", "2017-18", "2018-19", "2019-20", "2020-21", "2021-22", "2022-23", "2023-24", "2024-25"], "schools": {"Batchelder School": [493.0, 550.0, 530.0, 544.0, 573.0, 546.0, 533.0, 494.0, 515.0, 511.0, 523.0, 570.0, 571.0, 564.0, 557.0, 572.0, 581.0, 549.0, 554.0, 586.0, 510.0, 578.0, 546.0, 568.0, 589.0, 565.0, 521.0, 528.0, 466.0, 478.0, 433.0, 397.0, null, null, null, null, null, null, null], "Betances Learning Lab Magnet School": [498.0, 551.0, 535.0, 567.0, 583.0, 581.0, 507.0, 527.0, 454.0, 423.0, 426.0, 473.0, 434.0, 412.0, 389.0, 376.0, 409.0, 431.0, 441.0, 438.0, 395.0, 403.0, 439.0, 345.0, 311.0, 315.0, 323.0, 278.0, 288.0, 279.0, 300.0, 384.0, 391.0, 411.0, 438.0, 394.0, 394.0, 411.0, 398.0], "Bulkeley High School Lower School": [1649.0, 1534.0, 1555.0, 1505.0, 1624.0, 1728.0, 1759.0, 1861.0, 1744.0, 1596.0, 1490.0, 1517.0, 1396.0, 1556.0, 1738.0, 1834.0, 1751.0, 1673.0, 1633.0, 1230.0, 1445.0, 1484.0, 1387.0, 767.0, 675.0, 634.0, 586.0, 493.0, 489.0, 412.0, null, null, null, null, null, null, null, null, null], "Burns Latino Studies Academy": [929.0, 997.0, 1006.0, 990.0, 1089.0, 1072.0, 765.0, 669.0, 679.0, 737.0, 706.0, 745.0, 666.0, 668.0, 691.0, 696.0, 662.0, 629.0, 618.0, 701.0, 511.0, 533.0, 534.0, 584.0, 666.0, 598.0, 598.0, 541.0, 581.0, 520.0, 496.0, 439.0, 467.0, 272.0, 241.0, 232.0, 224.0, 228.0, 251.0], "Burr Middle School": [565.0, 577.0, 564.0, 591.0, 586.0, 652.0, 700.0, 701.0, 622.0, 630.0, 611.0, 639.0, 657.0, 745.0, 692.0, 729.0, 549.0, 511.0, 460.0, 475.0, 513.0, 537.0, 520.0, 625.0, 707.0, 810.0, 729.0, 708.0, 685.0, 590.0, 616.0, 542.0, 546.0, 579.0, 324.0, 308.0, 277.0, 307.0, 259.0], "Clark School": [688.0, 705.0, 723.0, 714.0, 768.0, 750.0, 685.0, 663.0, 644.0, 628.0, 629.0, 600.0, 592.0, 605.0, 492.0, 431.0, 418.0, 422.0, 390.0, 436.0, 397.0, 442.0, 466.0, 416.0, 384.0, 397.0, 379.0, 369.0, 335.0, 246.0, null, null, null, null, null, null, null, null, null], "Dwight-Bellizzi Dual Language Academy": [361.0, 365.0, 382.0, 413.0, 409.0, 468.0, 452.0, 498.0, 468.0, 529.0, 570.0, 537.0, 585.0, 534.0, 570.0, 531.0, 562.0, 545.0, 520.0, 577.0, 429.0, 434.0, 355.0, 328.0, 339.0, 450.0, 556.0, 635.0, 662.0, 649.0, 634.0, 623.0, 596.0, 555.0, 566.0, 594.0, 626.0, 643.0, 651.0], "Environmental Sciences Magnet At Hooker School": [859.0, 936.0, 1002.0, 1030.0, 1023.0, 712.0, 719.0, 696.0, 779.0, 646.0, 433.0, 344.0, 279.0, 251.0, 248.0, 213.0, 255.0, 301.0, 318.0, 345.0, 402.0, 403.0, 407.0, 345.0, 275.0, 358.0, 570.0, 596.0, 607.0, 613.0, 610.0, 613.0, 607.0, 606.0, 573.0, 552.0, 556.0, 567.0, 547.0], "Kennelly School": [578.0, 604.0, 617.0, 632.0, 609.0, 671.0, 658.0, 723.0, 751.0, 824.0, 832.0, 887.0, 911.0, 886.0, 944.0, 996.0, 867.0, 773.0, 817.0, 821.0, 830.0, 809.0, 799.0, 795.0, 783.0, 799.0, 703.0, 658.0, 621.0, 571.0, 558.0, 534.0, 626.0, 644.0, 605.0, 579.0, 598.0, 650.0, 628.0], "Kinsella Magnet School Of Performing Arts: Pk-8 Campus": [650.0, 638.0, 687.0, 624.0, 715.0, 708.0, 658.0, 681.0, 567.0, 549.0, 582.0, 508.0, 537.0, 511.0, 506.0, 463.0, 487.0, 446.0, 384.0, 425.0, 489.0, 517.0, 569.0, 618.0, 663.0, 690.0, 760.0, 819.0, 884.0, 910.0, 913.0, 884.0, 833.0, 711.0, 712.0, 652.0, 465.0, 436.0, 435.0], "M. D. Fox School": [1211.0, 1235.0, 1231.0, 1251.0, 1370.0, 1017.0, 1059.0, 1184.0, 1139.0, 1138.0, 974.0, 966.0, 1024.0, 1018.0, 1010.0, 1069.0, 1010.0, 893.0, 866.0, 925.0, 830.0, 824.0, 783.0, 801.0, 848.0, 688.0, 533.0, 569.0, 602.0, 621.0, 647.0, 610.0, 592.0, 583.0, 525.0, 504.0, 493.0, 531.0, 562.0], "M. L. King Jr. Middle School": [1126.0, 1159.0, 1115.0, 1140.0, 1137.0, 1082.0, 1060.0, 919.0, 822.0, 800.0, 791.0, 758.0, 663.0, 781.0, 759.0, 732.0, 755.0, 771.0, 729.0, 792.0, 665.0, 600.0, 522.0, 513.0, 469.0, 407.0, 383.0, 316.0, 329.0, 356.0, 294.0, 236.0, 182.0, 169.0, 274.0, 215.0, 203.0, 187.0, 184.0], "Mcdonough Middle School": [648.0, 686.0, 768.0, 795.0, 852.0, 869.0, 831.0, 781.0, 769.0, 795.0, 818.0, 594.0, 594.0, 371.0, 391.0, 559.0, 543.0, 539.0, 491.0, 504.0, 464.0, 441.0, 396.0, 358.0, 422.0, 453.0, 385.0, 291.0, 252.0, 239.0, 261.0, 237.0, 294.0, 391.0, 345.0, 316.0, 317.0, 346.0, 301.0], "Milner Middle School": [694.0, 751.0, 701.0, 732.0, 646.0, 743.0, 672.0, 658.0, 657.0, 598.0, 573.0, 549.0, 552.0, 586.0, 562.0, 573.0, 556.0, 578.0, 493.0, 501.0, 404.0, 360.0, 417.0, 400.0, 412.0, 423.0, 373.0, 376.0, 330.0, 334.0, 292.0, 309.0, 329.0, 320.0, 328.0, 312.0, 284.0, 278.0, 261.0], "Naylor/Ccsu Leadership Academy": [518.0, 529.0, 487.0, 480.0, 526.0, 540.0, 541.0, 545.0, 512.0, 531.0, 599.0, 538.0, 548.0, 654.0, 628.0, 623.0, 639.0, 600.0, 563.0, 561.0, 576.0, 564.0, 608.0, 702.0, 703.0, 706.0, 722.0, 660.0, 682.0, 660.0, 636.0, 614.0, 521.0, 423.0, 388.0, 389.0, 357.0, 370.0, 372.0], "Parkville Community School": [685.0, 684.0, 683.0, 722.0, 764.0, 786.0, 735.0, 784.0, 709.0, 778.0, 730.0, 734.0, 776.0, 700.0, 704.0, 596.0, 573.0, 601.0, 611.0, 664.0, 561.0, 596.0, 578.0, 514.0, 516.0, 535.0, 564.0, 543.0, 532.0, 537.0, 534.0, 485.0, 451.0, 432.0, 385.0, 416.0, 396.0, 375.0, 351.0], "Rawson School": [422.0, 409.0, 423.0, 437.0, 422.0, 384.0, 405.0, 373.0, 368.0, 340.0, 380.0, 379.0, 392.0, 388.0, 379.0, 329.0, 293.0, 296.0, 299.0, 334.0, 422.0, 586.0, 755.0, 734.0, 463.0, 452.0, 573.0, 498.0, 484.0, 373.0, 383.0, 357.0, 362.0, 332.0, 255.0, 224.0, 231.0, 209.0, 198.0], "Sanchez School": [null, null, null, null, null, null, 392.0, 516.0, 556.0, 459.0, 520.0, 519.0, 522.0, 485.0, 493.0, 482.0, 507.0, 577.0, 526.0, 559.0, 530.0, 580.0, 528.0, 493.0, 492.0, 469.0, 494.0, 492.0, 485.0, 480.0, 396.0, 364.0, 424.0, 381.0, 344.0, 324.0, 322.0, 332.0, 311.0], "Sand School": [751.0, 806.0, 826.0, 781.0, 756.0, 689.0, 688.0, 661.0, 570.0, 489.0, 421.0, 347.0, 370.0, 406.0, 414.0, 393.0, 323.0, 346.0, 371.0, 401.0, 351.0, 366.0, 442.0, 413.0, 463.0, 471.0, 484.0, 459.0, 402.0, 394.0, 362.0, 358.0, 395.0, 333.0, 286.0, 291.0, 286.0, 273.0, 266.0], "Simpson-Waverly School": [548.0, 589.0, 609.0, 610.0, 630.0, 626.0, 562.0, 570.0, 466.0, 495.0, 470.0, 461.0, 425.0, 418.0, 371.0, 328.0, 332.0, 323.0, 383.0, 420.0, 371.0, 366.0, 347.0, 437.0, 362.0, 347.0, 326.0, 297.0, 295.0, 293.0, 314.0, 251.0, null, null, null, null, null, null, null], "Stem Magnet At Annie Fisher School": [593.0, 715.0, 709.0, 736.0, 757.0, 734.0, 736.0, 776.0, 728.0, 784.0, 770.0, 764.0, 730.0, 723.0, 695.0, 709.0, 661.0, 603.0, 558.0, 589.0, 620.0, 560.0, 376.0, 253.0, 329.0, 344.0, 356.0, 359.0, 360.0, 367.0, 366.0, 363.0, 366.0, 337.0, 342.0, 352.0, 344.0, 373.0, 348.0], "Webster Micro Society Magnet School": [413.0, 424.0, 390.0, 395.0, 437.0, 439.0, 459.0, 423.0, 467.0, 473.0, 447.0, 517.0, 520.0, 530.0, 511.0, 457.0, 521.0, 543.0, 571.0, 562.0, 625.0, 620.0, 610.0, 619.0, 592.0, 582.0, 626.0, 675.0, 678.0, 660.0, 633.0, 613.0, 622.0, 635.0, 642.0, 629.0, 615.0, 631.0, 626.0], "West Middle School": [686.0, 735.0, 692.0, 743.0, 858.0, 847.0, 805.0, 863.0, 841.0, 824.0, 919.0, 904.0, 934.0, 815.0, 797.0, 795.0, 704.0, 649.0, 711.0, 795.0, 739.0, 768.0, 670.0, 698.0, 690.0, 658.0, 637.0, 498.0, 380.0, 359.0, 449.0, 437.0, 480.0, 462.0, 262.0, 295.0, 293.0, 306.0, 289.0], "Wish Museum School": [554.0, 698.0, 615.0, 631.0, 603.0, 608.0, 549.0, 503.0, 525.0, 575.0, 529.0, 504.0, 428.0, 435.0, 408.0, 421.0, 386.0, 417.0, 444.0, 475.0, 415.0, 437.0, 424.0, 426.0, 444.0, 392.0, 392.0, 354.0, 303.0, 304.0, 429.0, 395.0, 502.0, 332.0, 285.0, 289.0, 291.0, 299.0, 297.0]}};
+const YEARS = RAW.years;
+const SCHOOLS = Object.keys(RAW.schools);
+
+let threshold = 500;
+let yearFromIdx = 0;
+let yearToIdx = YEARS.length - 1;
+let visibleSchools = new Set(SCHOOLS);
+
+function rollingAvg3(series) {
+  return series.map((_, i) => {
+    const start = Math.max(0, i - 2);
+    const slice = series.slice(start, i + 1).filter(v => v != null);
+    if (slice.length === 0) return null;
+    return slice.reduce((a, b) => a + b, 0) / slice.length;
+  });
+}
+
+function computeSeries() {
+  const activeYears = YEARS.slice(yearFromIdx, yearToIdx + 1);
+  const belowCounts = [];
+  const aboveCounts = [];
+  const yearlyAvg = [];
+
+  activeYears.forEach((year, idx) => {
+    const globalIdx = yearFromIdx + idx;
+    let below = 0, above = 0;
+    const vals = [];
+    SCHOOLS.forEach(school => {
+      if (!visibleSchools.has(school)) return;
+      const v = RAW.schools[school][globalIdx];
+      if (v == null) return;
+      vals.push(v);
+      if (v <= threshold) below++; else above++;
+    });
+    belowCounts.push(below);
+    aboveCounts.push(above);
+    yearlyAvg.push(vals.length ? vals.reduce((a, b) => a + b, 0) / vals.length : null);
+  });
+
+  const rolling = rollingAvg3(yearlyAvg);
+  return { activeYears, belowCounts, aboveCounts, rolling, yearlyAvg };
+}
+
+function updateHeadline(yearlyAvg, activeYears) {
+  const firstIdx = yearlyAvg.findIndex(v => v != null);
+  let lastIdx = -1;
+  for (let i = yearlyAvg.length - 1; i >= 0; i--) { if (yearlyAvg[i] != null) { lastIdx = i; break; } }
+  const h1 = document.getElementById('headline');
+  const dek = document.getElementById('dek');
+  if (firstIdx === -1 || lastIdx === -1 || firstIdx === lastIdx) {
+    h1.textContent = 'Not enough data in this range to compare.';
+    dek.textContent = '';
+    return;
+  }
+  const startVal = yearlyAvg[firstIdx];
+  const endVal = yearlyAvg[lastIdx];
+  const pctChange = ((endVal - startVal) / startVal) * 100;
+  const pctDisplay = Math.abs(pctChange).toFixed(0);
+  const direction = pctChange < 0 ? 'lost' : 'gained';
+
+  const round50 = v => Math.round(v / 50) * 50;
+  h1.innerHTML = `The average Hartford legacy school has ${direction} <span class="num">${pctDisplay}%</span> of its students.`;
+  const endLabel = '20' + activeYears[lastIdx].slice(-2);
+  dek.innerHTML = `In ${activeYears[firstIdx]}, a typical legacy<a href="#methodology" style="text-decoration:none;">*</a> school in Hartford had around <strong>${round50(startVal).toLocaleString()} kids</strong>. By ${endLabel} that number was closer to <strong>${round50(endVal).toLocaleString()}</strong>. The line below tracks average enrollment per school. The bars behind it show how many of these schools sit above and below a size benchmark, set to ${threshold} students by default.`;
+}
+
+const lineOnTopPlugin = {
+  id: 'lineOnTop',
+  afterDatasetsDraw(chartInstance) {
+    const lineIdx = chartInstance.data.datasets.findIndex(d => d.type === 'line');
+    if (lineIdx === -1) return;
+    const meta = chartInstance.getDatasetMeta(lineIdx);
+    if (!meta || !meta.controller || !meta.dataset) return;
+
+    const ds = chartInstance.data.datasets[lineIdx];
+    const colour = ds.borderColor, width = ds.borderWidth;
+
+    // Draw a white casing first, then the line itself. Without it the dark
+    // trend line disappears wherever it crosses the dark "small schools" bars.
+    const paint = (c, w) => {
+      ds.borderColor = c; ds.borderWidth = w;
+      meta.dataset.options.borderColor = c;
+      meta.dataset.options.borderWidth = w;
+      meta.controller.draw();
+    };
+    paint('#FFFFFF', width + 5);
+    paint(colour, width);
+  }
+};
+
+const lineEndLabelsPlugin = {
+  id: 'lineEndLabels',
+  afterDatasetsDraw(chartInstance) {
+    const lineIdx = chartInstance.data.datasets.findIndex(d => d.type === 'line');
+    if (lineIdx === -1) return;
+    const dataset = chartInstance.data.datasets[lineIdx];
+    const meta = chartInstance.getDatasetMeta(lineIdx);
+    const values = dataset.data;
+
+    let peakIdx = -1, peakVal = -Infinity;
+    let lastIdx = -1;
+    for (let i = 0; i < values.length; i++) {
+      const v = values[i];
+      if (v == null) continue;
+      if (v > peakVal) { peakVal = v; peakIdx = i; }
+      lastIdx = i;
+    }
+    if (peakIdx === -1 || lastIdx === -1) return;
+
+    const ctx2 = chartInstance.ctx;
+    ctx2.save();
+    ctx2.font = '600 12px Inter, sans-serif';
+    ctx2.fillStyle = '#16233B';
+    ctx2.strokeStyle = '#FFFFFF';
+    ctx2.lineWidth = 3;
+    ctx2.lineJoin = 'round';
+
+    const drawLabel = (idx, value, aboveLine) => {
+      const point = meta.data[idx];
+      if (!point) return;
+      const label = Math.round(value).toLocaleString();
+      const y = aboveLine ? point.y - 12 : point.y + 18;
+      ctx2.textAlign = idx === 0 ? 'left' : (idx === values.length - 1 ? 'right' : 'center');
+      ctx2.strokeText(label, point.x, y);
+      ctx2.fillText(label, point.x, y);
+    };
+
+    drawLabel(peakIdx, peakVal, true);
+    if (lastIdx !== peakIdx) drawLabel(lastIdx, values[lastIdx], true);
+    ctx2.restore();
+  }
+};
+
+const ctx = document.getElementById('mainChart').getContext('2d');
+let chart = new Chart(ctx, {
+  plugins: [lineOnTopPlugin, lineEndLabelsPlugin],
+  data: {
+    labels: [],
+    datasets: [
+      { type: 'bar', label: '≤ threshold', data: [], backgroundColor: '#2D2D2D', stack: 'schools', yAxisID: 'y', order: 1 },
+      { type: 'bar', label: '> threshold', data: [], backgroundColor: '#D3D3D3', stack: 'schools', yAxisID: 'y', order: 1 },
+      { type: 'line', label: '3-yr rolling avg enrollment', data: [], borderColor: '#16233B', backgroundColor: '#16233B', borderWidth: 3, pointRadius: 0, spanGaps: true, yAxisID: 'y1', order: 2 }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: (item) => {
+            const v = item.parsed.y;
+            if (v == null) return item.dataset.label + ': n/a';
+            if (item.dataset.type === 'line') return item.dataset.label + ': ' + v.toFixed(0) + ' students';
+            return item.dataset.label + ': ' + v + ' schools';
+          }
+        }
+      }
+    },
+    scales: {
+      x: { stacked: true, ticks: { maxRotation: 60, minRotation: 60, autoSkip: true, maxTicksLimit: 20 } },
+      y: {
+        position: 'right',
+        stacked: true, beginAtZero: true,
+        title: { display: true, text: 'Schools (bars, right axis)', color: '#5B6478', font: { weight: 'bold' } },
+        ticks: { color: '#5B6478' },
+        grid: { drawOnChartArea: false }
+      },
+      y1: {
+        position: 'left',
+        title: { display: true, text: 'Average enrollment per school (line, left axis)', color: '#16233B', font: { weight: 'bold' } },
+        ticks: { color: '#16233B' },
+        min: 0,
+        max: 1000
+      }
+    }
+  }
+});
+
+function render() {
+  const { activeYears, belowCounts, aboveCounts, rolling, yearlyAvg } = computeSeries();
+  chart.data.labels = activeYears;
+  chart.data.datasets[0].data = belowCounts;
+  chart.data.datasets[1].data = aboveCounts;
+  chart.data.datasets[2].data = rolling;
+  chart.update();
+
+  document.getElementById('chartSub').textContent =
+    `${activeYears[0]} to ${activeYears[activeYears.length-1]} • ${visibleSchools.size} of ${SCHOOLS.length} schools • benchmark ${threshold} students`;
+  document.getElementById('schoolCount').textContent =
+    `${visibleSchools.size} of ${SCHOOLS.length}`;
+
+  updateHeadline(yearlyAvg, activeYears);
+}
+
+document.querySelectorAll('.chips .chip[data-preset]').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.chips .chip[data-preset]').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    const preset = chip.dataset.preset;
+    if (preset === 'full') { yearFromIdx = 0; yearToIdx = YEARS.length - 1; }
+    else if (preset === 'last10') { yearToIdx = YEARS.length - 1; yearFromIdx = Math.max(0, yearToIdx - 9); }
+    else if (preset === 'last20') { yearToIdx = YEARS.length - 1; yearFromIdx = Math.max(0, yearToIdx - 19); }
+    else if (preset === 'since2008') { const idx = YEARS.indexOf('2008-09'); yearFromIdx = idx >= 0 ? idx : 0; yearToIdx = YEARS.length - 1; }
+    render();
+  });
+});
+
+const schoolListWrap = document.getElementById('schoolListWrap');
+const schoolToggle = document.getElementById('toggleSchoolList');
+schoolToggle.addEventListener('click', () => {
+  schoolListWrap.classList.toggle('open');
+  schoolToggle.classList.toggle('open');
+});
+
+const listEl = document.getElementById('schoolList');
+SCHOOLS.forEach((school, i) => {
+  const div = document.createElement('div');
+  div.className = 'school-item';
+  const id = 'sch_' + i;
+  div.innerHTML = `<input type="checkbox" id="${id}" checked><label for="${id}">${school}</label>`;
+  listEl.appendChild(div);
+  div.querySelector('input').addEventListener('change', (e) => {
+    if (e.target.checked) visibleSchools.add(school);
+    else visibleSchools.delete(school);
+    render();
+  });
+});
+
+document.getElementById('selectAll').addEventListener('click', () => {
+  visibleSchools = new Set(SCHOOLS);
+  listEl.querySelectorAll('input').forEach(cb => cb.checked = true);
+  render();
+});
+document.getElementById('selectNone').addEventListener('click', () => {
+  visibleSchools = new Set();
+  listEl.querySelectorAll('input').forEach(cb => cb.checked = false);
+  render();
+});
+
+render();
+
+// Generated by build_choice_panel.py -- do not edit by hand.
+const CHOICE_RAW = {"years": ["1986-87", "1987-88", "1988-89", "1989-90", "1990-91", "1991-92", "1992-93", "1993-94", "1994-95", "1995-96", "1996-97", "1997-98", "1998-99", "1999-00", "2000-01", "2001-02", "2002-03", "2003-04", "2004-05", "2005-06", "2006-07", "2007-08", "2008-09", "2009-10", "2010-11", "2011-12", "2012-13", "2013-14", "2014-15", "2015-16", "2016-17", "2017-18", "2018-19", "2019-20", "2020-21", "2021-22", "2022-23", "2023-24", "2024-25"], "series": {"Traditional public schools": [24282, 25365, 24741, 25063, 25811, 26113, 25769, 25683, 24477, 23724, 23791, 23536, 22366, 22601, 22659, 22370, 21362, 20608, 19814, 18636, 18147, 17140, 17219, 16705, 15639, 14427, 14579, 13731, 12621, 11822, 11096, 10978, 10032, 9370, 8457, 8363, 8231, 7951, 7579], "Vo-tech schools": [517, 498, 506, 477, 483, 529, 511, 505, 495, 500, 538, 509, 544, 565, 608, 632, 642, 646, 566, 510, 495, 486, 514, 571, 607, 631, 651, 670, 675, 642, 630, 661, 606, 618, 631, 612, 594, 575, 610], "Magnets & choice programs": [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 116, 0, 0, 0, 2445, 2538, 2605, 2611, 1844, 2790, 3981, 5160, 6214, 7195, 8945, 9904, 10661, 10406, 11533, 11490, 11858, 12298, 12629, 12291, 12445, 12780, 13002]}, "basis": ["pre-Sheff", "pre-Sheff", "pre-Sheff", "pre-Sheff", "pre-Sheff", "pre-Sheff", "pre-Sheff", "pre-Sheff", "pre-Sheff", "pre-Sheff", "pre-Sheff", "pre-Sheff", "pre-Sheff", "pre-Sheff", "pre-Sheff", "pre-Sheff", "reconstructed", "reconstructed", "reconstructed", "reconstructed", "reconstructed", "reconstructed", "reconstructed", "reconstructed", "reconstructed", "reconstructed", "reconstructed", "reconstructed", "reconstructed", "reconstructed", "measured", "measured", "measured", "measured", "measured", "measured", "measured", "measured", "measured"], "definitionBreak": "2013-14", "firstMeasured": "2016-17"};
+
+const CHOICE_YEARS_FULL = CHOICE_RAW.years;
+const CHOICE_DATA_FULL = CHOICE_RAW.series;
+const CHOICE_COLORS_FULL = {
+  "Traditional public schools": '#D3D3D3',
+  "Vo-tech schools": '#808080',
+  "Magnets & choice programs": '#2D2D2D'
+};
+
+// Initialize choice chart
+// Reconstructed years are drawn hatched; measured years solid. The 2013-14
+// definitional break and the start of measured data are marked on the plot.
+const choiceHatch = (colour) => {
+  const c = document.createElement('canvas');
+  c.width = c.height = 8;
+  const g = c.getContext('2d');
+  g.fillStyle = colour; g.fillRect(0, 0, 8, 8);
+  g.strokeStyle = 'rgba(255,255,255,0.55)'; g.lineWidth = 2.5;
+  g.beginPath(); g.moveTo(-2, 10); g.lineTo(10, -2); g.stroke();
+  return g.createPattern(c, 'repeat');
+};
+
+const choiceMarkers = {
+  id: 'choiceMarkers',
+  afterDatasetsDraw(c) {
+    const g = c.ctx, a = c.chartArea;
+    const from = c.$visibleFrom || 0;
+    const rule = (label, year, dash, dy) => {
+      const i = CHOICE_RAW.years.indexOf(year) - from;
+      if (i < 0 || i >= c.data.labels.length) return;
+      const x = c.scales.x.getPixelForValue(i) - c.scales.x.width / c.data.labels.length / 2;
+      g.save();
+      g.setLineDash(dash); g.strokeStyle = '#16233B'; g.lineWidth = 1.5;
+      g.beginPath(); g.moveTo(x, a.top); g.lineTo(x, a.bottom); g.stroke();
+      g.setLineDash([]);
+      g.font = '600 10.5px Inter, sans-serif';
+      g.fillStyle = '#16233B'; g.strokeStyle = '#fff'; g.lineWidth = 3;
+      g.textAlign = 'left';
+      g.strokeText(label, x + 5, a.top + dy);
+      g.fillText(label, x + 5, a.top + dy);
+      g.restore();
+    };
+    rule('Sheff redefined "minority"', CHOICE_RAW.definitionBreak, [4, 3], 12);
+    rule('State counts begin', CHOICE_RAW.firstMeasured, [2, 2], 30);
+  }
+};
+
+const CHOICE_AVAILABLE_FROM = '2002-03';
+let choiceRange = 'available';
+
+function choiceSlice() {
+  const from = choiceRange === 'available'
+    ? CHOICE_RAW.years.indexOf(CHOICE_AVAILABLE_FROM) : 0;
+  return Math.max(from, 0);
+}
+
+const choiceCtx = document.getElementById('choiceChart').getContext('2d');
+const choiceChart = new Chart(choiceCtx, {
+  type: 'bar',
+  plugins: [choiceMarkers],
+  data: {
+    labels: CHOICE_YEARS_FULL,
+    datasets: Object.keys(CHOICE_DATA_FULL).map(label => ({
+      label,
+      data: CHOICE_DATA_FULL[label],
+      backgroundColor: CHOICE_RAW.basis.map(b =>
+        b === 'measured' ? CHOICE_COLORS_FULL[label]
+                         : choiceHatch(CHOICE_COLORS_FULL[label])),
+      stack: 'choice'
+    }))
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { display: false },
+      tooltip: { callbacks: {
+        label: (item) => item.dataset.label + ': ' + item.parsed.y.toLocaleString() + ' students',
+        afterBody: (items) => items.length
+          ? ({ 'measured': 'State count',
+               'reconstructed': 'Reconstructed from the court record',
+               'pre-Sheff': 'Before the choice programs existed' }
+             [CHOICE_RAW.basis[items[0].dataIndex + (choiceChart.$visibleFrom || 0)]] || '')
+          : ''
+      } }
+    },
+    scales: {
+      x: { stacked: true, ticks: { maxRotation: 60, minRotation: 60, autoSkip: true, maxTicksLimit: 24 } },
+      y: { stacked: true, beginAtZero: true, title: { display: true, text: 'Hartford-resident students' } }
+    }
+  }
+});
+
+const choiceLegendEl = document.getElementById('choiceLegend');
+Object.keys(CHOICE_DATA_FULL).forEach(label => {
+  const span = document.createElement('span');
+  span.innerHTML = `<span class="legend-swatch" style="background:${CHOICE_COLORS_FULL[label]};"></span>${label}`;
+  choiceLegendEl.appendChild(span);
+});
+const hatchNote = document.createElement('span');
+hatchNote.innerHTML = '<span class="legend-swatch" style="background:#808080;' +
+  'background-image:repeating-linear-gradient(45deg,transparent,transparent 2px,#fff 2px,#fff 3px);' +
+  '"></span>hatched = reconstructed';
+choiceLegendEl.appendChild(hatchNote);
+
+function renderChoice() {
+  const from = choiceSlice();
+  choiceChart.data.labels = CHOICE_RAW.years.slice(from);
+  Object.keys(CHOICE_DATA_FULL).forEach((label, i) => {
+    choiceChart.data.datasets[i].data = CHOICE_DATA_FULL[label].slice(from);
+    choiceChart.data.datasets[i].backgroundColor = CHOICE_RAW.basis.slice(from).map(b =>
+      b === 'measured' ? CHOICE_COLORS_FULL[label]
+                       : choiceHatch(CHOICE_COLORS_FULL[label]));
+  });
+  choiceChart.$visibleFrom = from;
+  choiceChart.update();
+}
+
+document.querySelectorAll('#choiceChips .chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('#choiceChips .chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    choiceRange = chip.dataset.range;
+    renderChoice();
+  });
+});
+
+renderChoice();
+
+</script>
+
+</body>
+</html>
