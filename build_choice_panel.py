@@ -84,18 +84,28 @@ EDSIGHT = {
     2024: ( 7579, 8996, 2081, 1318, 610, 607),
 }
 
-# --- Reconstructed: the Sheff compliance rate, 2002-03 to 2015-16 -----------
-# Share of Hartford-resident minority students in reduced-isolation settings.
-# Where the record disagrees, the LOWER figure is used, which understates the
-# growth being documented rather than overstating it.
-SHEFF_RATE = {
-    2002: 10.0,   # lower of 10% / 17% in the record
-    2005: 12.0,
-    2006:  9.0,   # lower of 9% / 11% in the record
-    2012: 37.0,
-    2014: 44.5,   # derived from 9,558 of 21,458 -- the firmest early anchor
-    2015: 45.5,
+# --- The Sheff compliance rate, 2002-03 to 2015-16 --------------------------
+# Share of Hartford-resident Black and Latino students in reduced-isolation
+# settings. 2004-05 onward is read from a compiled annual series (see
+# OTL_CSV below), so no interpolation is needed across that stretch.
+#
+# Only 2002-03 is still a hand-picked anchor, taken from the plaintiffs' ten-
+# year retrospective; 2003-04 is interpolated between it and the first reported
+# year. An earlier version interpolated the whole 2002-2015 span from six
+# scattered anchors. Checked against the compiled series, that came within a
+# mean of 2.9 points -- but three of the six anchors were wrong by up to five,
+# and the real series is not monotonic the way straight lines assume.
+SHEFF_RATE_MANUAL = {
+    2002: 10.0,   # plaintiffs' ten-year retrospective; record also shows 17%
 }
+
+# Compiled by Michael Kulik '23 and Maria Vicuna '24, Trinity College, from
+# CSDE Sheff compliance reports (2019-2021) and a CT Mirror chart by Jacqueline
+# Rabe Thomas (2004-2018). Published MIT-licensed at
+# https://github.com/OnTheLine/otl-sheff-data
+OTL_CSV = Path("research/otl_2004_2021_hartford_black_latino_diverse_schools.csv")
+OTL_RATE_ROW = "Percent in Diverse"
+OTL_USE_THROUGH = 2015   # past this, EdSight measures it directly
 
 # In 2013 the Phase III stipulation redefined "minority" from all non-white to
 # Black and Hispanic only. Eight magnets became compliant with no change in
@@ -155,6 +165,19 @@ def read_non_magnet_enrolment(path: Path) -> tuple:
     return total("No"), total("Yes")
 
 
+def read_sheff_rates(path: Path) -> dict:
+    """Reported reduced-isolation rate by starting year, from the OTL series."""
+    df = pd.read_csv(path, index_col=0)
+    df.columns = [c.strip() for c in df.columns]
+    df.index = [str(i).strip() for i in df.index]
+    rates = {}
+    for school_year in df.columns:
+        year = int(school_year[:4])
+        if year <= OTL_USE_THROUGH:
+            rates[year] = round(float(df.loc[OTL_RATE_ROW, school_year]) * 100, 1)
+    return rates
+
+
 def read_district_totals() -> dict:
     """Total Hartford district enrolment 1986-1997, from the raw CCD files.
 
@@ -191,13 +214,18 @@ def interpolate(anchors: dict, first: int, last: int) -> dict:
     return out
 
 
-def build(prince: dict, non_magnet: dict, magnet: dict, district: dict) -> pd.DataFrame:
+def build(prince: dict, non_magnet: dict, magnet: dict, district: dict,
+          reported_rates: dict) -> pd.DataFrame:
     votech_ratio = sum(EDSIGHT[y][4] / prince[y] for y in EDSIGHT) / len(EDSIGHT)
 
     overlap = [y for y in EDSIGHT if y in non_magnet]
     trad_ratio = sum(EDSIGHT[y][0] / non_magnet[y] for y in overlap) / len(overlap)
 
-    rate = interpolate(SHEFF_RATE, min(SHEFF_RATE), max(SHEFF_RATE))
+    # Reported figures win; the single manual anchor only fills the years before
+    # the reported series starts.
+    anchors = {**SHEFF_RATE_MANUAL, **reported_rates}
+    rate = interpolate(anchors, min(anchors), max(anchors))
+    self_reported = set(reported_rates)
 
     rows = []
     for year in range(FIRST_YEAR, LAST_YEAR + 1):
@@ -224,7 +252,7 @@ def build(prince: dict, non_magnet: dict, magnet: dict, district: dict) -> pd.Da
             # Sheff share, rather than assuming it.
             total = round((trad + votech) / (1 - rate[year] / 100))
             mc = total - trad - votech
-            basis = "reconstructed"
+            basis = "reconstructed" if year in self_reported else "interpolated"
 
         rows.append({
             "school_year": f"{year}-{str((year + 1) % 100).zfill(2)}",
@@ -283,8 +311,11 @@ def inject(df: pd.DataFrame, index_html: Path = INDEX_HTML) -> bool:
 def main() -> None:
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     non_magnet, magnet = read_non_magnet_enrolment(EDP_CSV)
+    rates = read_sheff_rates(OTL_CSV)
+    print(f"reported Sheff rates: {min(rates)}-{max(rates)} "
+          f"({len(rates)} years, no interpolation needed)")
     df = build(read_prince_enrolment(ELSI_CSV), non_magnet, magnet,
-               read_district_totals())
+               read_district_totals(), rates)
     df.to_csv(OUT_DIR / "hartford_choice_panel.csv", index=False)
 
     counts = df["basis"].value_counts()
